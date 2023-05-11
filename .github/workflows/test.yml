@@ -6,6 +6,10 @@ on:
       - "**"
   workflow_dispatch:
 
+concurrency:
+  group: testing-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   lint_api:
     name: Lint API
@@ -43,9 +47,16 @@ jobs:
         run: dotnet tool restore
 
       - name: Tests
-        run: dotnet test --configuration Release --collect:"XPlat Code Coverage" --results-directory ./coverage
+        run: dotnet test --blame-hang-timeout 1m --configuration Release --collect:"XPlat Code Coverage" --results-directory ./artifacts
+      - uses: actions/upload-artifact@v3
+        name: Upload Blame Dump
+        if: failure()
+        with:
+          name: blame-dump
+          path: artifacts/**/dotnet_*.dmp
+          if-no-files-found: ignore
 
       - name: Generate Coverage Report
-        run: dotnet reportgenerator -reports:coverage/**/*.xml -targetdir:coveragereport -reporttypes:MarkdownSummaryGithub
+        run: dotnet reportgenerator -reports:artifacts/**/*.xml -targetdir:coveragereport -reporttypes:MarkdownSummaryGithub
       - name: Report Summary
         run: cat coveragereport/SummaryGithub.md >> $GITHUB_STEP_SUMMARY

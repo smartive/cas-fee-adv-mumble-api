@@ -20,47 +20,38 @@ public class PostUpdatesTest : IClassFixture<WebAppFactory>
         _factory = factory;
     }
 
-    public static TheoryData<HttpMethod, string, HttpContent?, Func<ServerEvent<Post>, bool>> ReceiveCorrectPostEventData => new()
+    public static TheoryData<HttpMethod, string, HttpContent?, Func<ServerEvent<Post>?, bool>>
+        ReceiveCorrectPostEventData => new()
     {
         // Create a new normal post.
         {
-            HttpMethod.Post, "/posts", new MultipartFormDataContent
-            {
-                {
-                    new StringContent("new post text"), "text"
-                },
-            },
+            HttpMethod.Post, "/posts", new MultipartFormDataContent { { new StringContent("new post text"), "text" }, },
             result => result is { EventType: "postCreated", Data.Text: "new post text" }
         },
 
         // Update (replace) a post.
         {
-            HttpMethod.Put, "/posts/00000000000000000000000001", new MultipartFormDataContent
-            {
-                {
-                    new StringContent("new post text"), "text"
-                },
-            },
+            HttpMethod.Put, "/posts/00000000000000000000000001",
+            new MultipartFormDataContent { { new StringContent("new post text"), "text" }, },
             result => result is { EventType: "postUpdated", Data.Text: "new post text" }
         },
 
         // Patch an existing post.
         {
-            HttpMethod.Patch, "/posts/00000000000000000000000001", new StringContent(@"{""text"": ""new post text""}", Encoding.UTF8, "application/json"),
+            HttpMethod.Patch, "/posts/00000000000000000000000001",
+            new StringContent(@"{""text"": ""new post text""}", Encoding.UTF8, "application/json"),
             result => result is { EventType: "postUpdated", Data.Text: "new post text" }
         },
 
         // Update media of a post.
         {
-            HttpMethod.Put, "/posts/00000000000000000000000001/media", new MultipartFormDataContent
+            HttpMethod.Put, "/posts/00000000000000000000000001/media",
+            new MultipartFormDataContent
             {
                 {
                     new StreamContent(File.OpenRead("./TestFiles/test_small.png"))
                     {
-                        Headers =
-                        {
-                            ContentType = new("image/png"),
-                        },
+                        Headers = { ContentType = new("image/png"), },
                     },
                     "media", "test_small.png"
                 },
@@ -70,22 +61,20 @@ public class PostUpdatesTest : IClassFixture<WebAppFactory>
 
         // Delete media from a post.
         {
-            HttpMethod.Delete, "/posts/00000000000000000000000003/media", null, result => result is { EventType: "postUpdated", Data.MediaUrl: null }
+            HttpMethod.Delete, "/posts/00000000000000000000000003/media", null,
+            result => result is { EventType: "postUpdated", Data.MediaUrl: null }
         },
 
         // Create a reply.
         {
-            HttpMethod.Post, "/posts/00000000000000000000000001/replies", new MultipartFormDataContent
-            {
-                {
-                    new StringContent("new reply text"), "text"
-                },
-            },
+            HttpMethod.Post, "/posts/00000000000000000000000001/replies",
+            new MultipartFormDataContent { { new StringContent("new reply text"), "text" }, },
             result => result is { EventType: "postCreated", Data.Text: "new reply text" }
         },
     };
 
-    public static TheoryData<HttpMethod, string, HttpContent?, Func<ServerEvent<ServerLikeEvent>, bool>> ReceiveCorrectPostLikeEventData => new()
+    public static TheoryData<HttpMethod, string, HttpContent?, Func<ServerEvent<ServerLikeEvent>, bool>>
+        ReceiveCorrectPostLikeEventData => new()
     {
         // Like a post.
         {
@@ -110,23 +99,20 @@ public class PostUpdatesTest : IClassFixture<WebAppFactory>
         HttpMethod method,
         string url,
         HttpContent? content,
-        Func<ServerEvent<Post>, bool> verify)
+        Func<ServerEvent<Post>?, bool> verify)
     {
         await _factory.PrepareTestData(TestData.PostsWithLikes);
         var client = _factory.CreateClient();
-        var eventTask = GetServerEvent<Post>(
-            client,
-            "/posts/_sse");
+
+        await using var eventStream = await client.GetStreamAsync("/posts/_sse");
+
         using var request = new HttpRequestMessage(
             method,
             url)
-        {
-            Content = content,
-        };
+        { Content = content, };
 
         await client.SendAsync(request);
-
-        var result = await eventTask;
+        var result = await GetServerEvent<Post>(eventStream);
 
         Assert.True(verify(result));
     }
@@ -137,23 +123,20 @@ public class PostUpdatesTest : IClassFixture<WebAppFactory>
         HttpMethod method,
         string url,
         HttpContent? content,
-        Func<ServerEvent<ServerLikeEvent>, bool> verify)
+        Func<ServerEvent<ServerLikeEvent>?, bool> verify)
     {
         await _factory.PrepareTestData(TestData.PostsWithLikes);
         var client = _factory.CreateClient();
-        var eventTask = GetServerEvent<ServerLikeEvent>(
-            client,
-            "/posts/_sse");
+
+        await using var eventStream = await client.GetStreamAsync("/posts/_sse");
+
         using var request = new HttpRequestMessage(
             method,
             url)
-        {
-            Content = content,
-        };
+        { Content = content, };
 
         await client.SendAsync(request);
-
-        var result = await eventTask;
+        var result = await GetServerEvent<ServerLikeEvent>(eventStream);
 
         Assert.True(verify(result));
     }
@@ -163,49 +146,51 @@ public class PostUpdatesTest : IClassFixture<WebAppFactory>
     {
         await _factory.PrepareTestData(TestData.PostsWithLikes);
         var client = _factory.CreateClient();
-        var eventTask = GetServerEvent<ServerDeleteEvent>(
-            client,
-            "/posts/_sse");
+
+        await using var eventStream = await client.GetStreamAsync("/posts/_sse");
+
         using var request = new HttpRequestMessage(
             HttpMethod.Delete,
             "/posts/00000000000000000000000001");
 
         await client.SendAsync(request);
-
-        var result = await eventTask;
+        var result = await GetServerEvent<ServerDeleteEvent>(eventStream);
 
         Assert.True(result is { EventType: "postDeleted", Data.Id: "00000000000000000000000001" });
     }
 
-    private static async Task<ServerEvent<T>> GetServerEvent<T>(HttpClient client, string url)
-    where T : new()
+    private static async Task<ServerEvent<T>?> GetServerEvent<T>(Stream stream)
+        where T : new()
     {
-        using var sr = new StreamReader(await client.GetStreamAsync(url));
+        using var sr = new StreamReader(stream);
+
         if (sr.EndOfStream)
         {
-            throw new EndOfStreamException();
+            return null;
         }
 
         var ev = new ServerEvent<T>();
         while (!sr.EndOfStream)
         {
-            switch (await sr.ReadLineAsync())
+            var cts = new CancellationTokenSource(1000);
+            switch (await sr.ReadLineAsync(cts.Token))
             {
                 case "":
                     return ev;
                 case null:
-                    throw new EndOfStreamException();
+                    return null;
                 case var line when line.StartsWith("event:"):
                     ev.EventType = line.Replace("event:", string.Empty).Trim();
                     break;
                 case var line when line.StartsWith("data:"):
                     var data = line.Replace("data:", string.Empty).Trim();
-                    ev.Data = JsonSerializer.Deserialize<T>(data, Json) ?? throw new JsonException("could not parse json.");
+                    ev.Data = JsonSerializer.Deserialize<T>(data, Json) ??
+                              throw new JsonException("could not parse json.");
                     break;
             }
         }
 
-        throw new EndOfStreamException();
+        return null;
     }
 
     public record ServerLikeEvent
@@ -221,7 +206,7 @@ public class PostUpdatesTest : IClassFixture<WebAppFactory>
     }
 
     public record ServerEvent<T>
-    where T : new()
+        where T : new()
     {
         public string? EventType { get; set; }
 

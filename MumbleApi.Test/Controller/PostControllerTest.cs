@@ -19,8 +19,8 @@ public class PostControllerTest : IClassFixture<WebAppFactory>
     }
 
     public static TheoryData<string, HttpContent, Action<PostBase>> CreatePostData =>
-        new()
-        {
+            new()
+            {
             // Create a post with text only.
             {
                 "/posts", new MultipartFormDataContent
@@ -128,11 +128,11 @@ public class PostControllerTest : IClassFixture<WebAppFactory>
                     result.MediaUrl.Should().NotBeNull();
                 }
             },
-        };
+            };
 
     public static TheoryData<HttpMethod, string, HttpContent?, HttpStatusCode> ErroneousResultData =>
-        new()
-        {
+            new()
+            {
             // Create a post without data.
             {
                 HttpMethod.Post, "/posts", new MultipartFormDataContent(), HttpStatusCode.BadRequest
@@ -534,11 +534,11 @@ public class PostControllerTest : IClassFixture<WebAppFactory>
             {
                 HttpMethod.Delete, "/posts/00000000000000000000000010/likes", null, HttpStatusCode.NotFound
             },
-        };
+            };
 
     public static TheoryData<HttpContent, Action<PostBase>> ReplacePostData =>
-        new()
-        {
+            new()
+            {
             // Create a post with text only.
             {
                 new MultipartFormDataContent
@@ -592,7 +592,7 @@ public class PostControllerTest : IClassFixture<WebAppFactory>
                     result.MediaUrl.Should().NotBeNull();
                 }
             },
-        };
+            };
 
     [Theory]
     [InlineData("POST", "/posts")]

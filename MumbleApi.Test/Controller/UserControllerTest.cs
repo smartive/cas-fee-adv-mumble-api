@@ -17,8 +17,8 @@ public class UserControllerTest : IClassFixture<WebAppFactory>
     }
 
     public static TheoryData<HttpMethod, string, HttpContent?, HttpStatusCode> ErroneousResultData =>
-        new()
-        {
+            new()
+            {
             // Fetch a user that does not exist.
             {
                 HttpMethod.Get, "/users/foobar", null, HttpStatusCode.NotFound
@@ -101,7 +101,7 @@ public class UserControllerTest : IClassFixture<WebAppFactory>
             {
                 HttpMethod.Delete, "/users/foobar/followers", null, HttpStatusCode.NotFound
             },
-        };
+            };
 
     [Theory]
     [InlineData("PATCH", "/users")]
