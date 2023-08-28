@@ -26,13 +26,13 @@ resource "google_project_iam_member" "cloud_runner_svc" {
 locals {
   run_env = {
     "ASPNETCORE_URLS" : "http://+:8080",
-    "DATABASE_HOST" : "/cloudsql/${google_sql_database_instance.pgsql_db.connection_name}",
-    "DATABASE_PORT" : "5432",
-    "DATABASE_DATABASE" : google_sql_database.db.name,
-    "DATABASE_USERNAME" : google_sql_user.db_user.name,
-    "AUTHENTICATION_ISSUER" : "https://${local.zitadel_instance}",
-    "SWAGGER_CLIENTID" : zitadel_application_oidc.swagger.client_id,
-    "STORAGE_BUCKET" : google_storage_bucket.gcs_bucket.name,
+    "DATABASE__HOST" : "/cloudsql/${google_sql_database_instance.pgsql_db.connection_name}",
+    "DATABASE__PORT" : "5432",
+    "DATABASE__DATABASE" : google_sql_database.db.name,
+    "DATABASE__USERNAME" : google_sql_user.db_user.name,
+    "AUTHENTICATION__ISSUER" : "https://${local.zitadel_instance}",
+    "SWAGGER__CLIENTID" : zitadel_application_oidc.swagger.client_id,
+    "STORAGE__BUCKET" : google_storage_bucket.gcs_bucket.name,
   }
   run_secrets = {
     "DATABASE_PASSWORD" : "db-pass",
