@@ -1,4 +1,5 @@
 appsettings.Secrets.json
+.terraform/
 coverage/
 coveragereport/
 
