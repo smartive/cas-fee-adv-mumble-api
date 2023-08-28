@@ -60,8 +60,6 @@ builder.Services
         o.JwtProfile = config.Authentication.ApplicationCredentials;
         o.EnableCaching = true;
         o.CacheDuration = TimeSpan.FromHours(6);
-
-        // This is only used for debug purposes to allow local creation of users.
         o.Events.OnTokenValidated += async context =>
         {
             var userId = context.Principal?.FindFirstValue(OidcClaimTypes.Subject);
