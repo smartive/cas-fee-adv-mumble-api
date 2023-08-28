@@ -35,9 +35,9 @@ locals {
     "STORAGE__BUCKET" : google_storage_bucket.gcs_bucket.name,
   }
   run_secrets = {
-    "DATABASE_PASSWORD" : "db-pass",
-    "AUTHENTICATION_JWTKEY" : "zitadel-api-app-key",
-    "STORAGE_SERVICEACCOUNTKEY" : "storage-access",
+    "DATABASE__PASSWORD" : "db-pass",
+    "AUTHENTICATION__JWTKEY" : "zitadel-api-app-key",
+    "STORAGE__SERVICEACCOUNTKEY" : "storage-access",
   }
 }
 
