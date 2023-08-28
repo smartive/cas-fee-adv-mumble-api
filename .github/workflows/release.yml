@@ -66,4 +66,4 @@ jobs:
         working-directory: infrastructure
         env:
           TF_VAR_release_version: ${{ needs.release.outputs.new_release_version }}
-          TF_VAR_zitadel_auth: ${{ secrets.GOOGLE_DEPLOYER }}
+          TF_VAR_zitadel_auth: ${{ secrets.ZITADEL_DEPLOYER }}
