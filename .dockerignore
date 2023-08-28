@@ -1,0 +1,7 @@
+**/bin
+**/obj
+**/appsettings.*.json
+**/Dockerfile
+**/docker-compose*
+**/.env
+**/*.dockerfile
