@@ -31,6 +31,21 @@ var config = builder.Configuration
     .Get<AppConfig>() ?? throw new("Could not read config.");
 builder.Services.AddSingleton(config);
 
+builder.Services.AddLogging(
+    b => b
+#if DEBUG
+        .AddConsole()
+#else
+        .AddJsonConsole(
+            c =>
+            {
+                c.UseUtcTimestamp = true;
+                c.TimestampFormat = "dd.MM.yyyy - HH:mm:ss";
+            })
+#endif
+        .AddConfiguration(builder.Configuration));
+
+
 builder.Services.AddScoped<IPosts, Posts>();
 builder.Services.AddScoped<IStorage, Storage>();
 builder.Services.AddScoped<IUsers, Users>();
@@ -104,8 +119,8 @@ builder.Services.AddSwaggerGen(o =>
         Title = "Mumble API",
         Description =
             "API for 'mumble'. A simple messaging/twitter like API for the CAS Frontend Engineering Advanced.",
-        Contact = new() { Name = "smartive AG", Email = "hello@smartive.ch", Url = new("https://smartive.ch"), },
-        License = new() { Name = "Apache 2.0", Url = new("https://www.apache.org/licenses/LICENSE-2.0"), },
+        Contact = new() {Name = "smartive AG", Email = "hello@smartive.ch", Url = new("https://smartive.ch"),},
+        License = new() {Name = "Apache 2.0", Url = new("https://www.apache.org/licenses/LICENSE-2.0"),},
     });
 
     o.AddSecurityDefinition(ZitadelDefaults.AuthenticationScheme, new()
@@ -134,7 +149,7 @@ builder.Services.AddSwaggerGen(o =>
         Description = "Universally Unique Lexicographically Sortable Identifier",
         Type = "string",
         Example = new OpenApiString("01GEESHPQQ4NJKNZJN9AKWQW6G"),
-        ExternalDocs = new() { Description = "ULID Specification", Url = new("https://github.com/ulid/spec"), },
+        ExternalDocs = new() {Description = "ULID Specification", Url = new("https://github.com/ulid/spec"),},
     });
 
     o.OperationFilter<InternalServerErrorResponseFilter>();
@@ -166,7 +181,7 @@ else
         new()
         {
             ForwardedHeaders = ForwardedHeaders.XForwardedProto,
-            KnownNetworks = { new IPNetwork(IPAddress.Parse("0.0.0.0"), 0) },
+            KnownNetworks = {new IPNetwork(IPAddress.Parse("0.0.0.0"), 0)},
         });
     app.UseHsts();
 }
@@ -187,7 +202,7 @@ app.UseSwaggerUI(o =>
     o.RoutePrefix = string.Empty;
     o.OAuthConfigObject = new()
     {
-        Scopes = new List<string> { "openid", "profile", "email" },
+        Scopes = new List<string> {"openid", "profile", "email"},
         ClientId = config.Swagger.ClientId,
         UsePkceWithAuthorizationCodeGrant = true,
     };
