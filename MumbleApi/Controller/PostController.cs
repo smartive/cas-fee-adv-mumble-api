@@ -17,17 +17,8 @@ namespace MumbleApi.Controller;
 [Produces("application/json")]
 [SwaggerTag("Manage posts in the Mumble system.")]
 [OptionalZitadelAuthorize]
-public class PostController : ControllerBase
+public class PostController(IPosts posts, IPostUpdates updates) : ControllerBase
 {
-    private readonly IPosts _posts;
-    private readonly IPostUpdates _updates;
-
-    public PostController(IPosts posts, IPostUpdates updates)
-    {
-        _posts = posts;
-        _updates = updates;
-    }
-
     /// <summary>
     /// Fetch/Search a paginated list of posts.
     /// </summary>
@@ -37,12 +28,12 @@ public class PostController : ControllerBase
     [SwaggerResponse(200, "Success", typeof(PaginatedResult<Post>))]
     public async Task<IActionResult> Search([FromQuery] PostSearchParameters search)
     {
-        var (posts, total) = await _posts.GetPaginatedPostsWithLikes(search);
+        var (dbPosts, total) = await posts.GetPaginatedPostsWithLikes(search);
 
         return Ok(new PaginatedResult<Post>
         {
             Count = Convert.ToUInt32(total),
-            Data = posts.Select(Post.FromEntity(HttpContext.OptionalUserId())).ToList(),
+            Data = dbPosts.Select(Post.FromEntity(HttpContext.OptionalUserId())).ToList(),
             Next = total > search.Offset + search.Limit
                 ? $"{Url.ActionLink()}{(search with { Offset = search.Offset + search.Limit }).ToQueryString()}"
                 : null,
@@ -80,19 +71,19 @@ public class PostController : ControllerBase
             if (data.Media is not null)
             {
                 await using var file = data.Media.OpenReadStream();
-                postEntity = await _posts.CreatePost(
+                postEntity = await posts.CreatePost(
                     userId,
                     text: data.Text,
                     media: (file, data.Media.ContentType));
             }
             else
             {
-                postEntity = await _posts.CreatePost(
+                postEntity = await posts.CreatePost(
                     userId,
                     text: data.Text);
             }
 
-            await _updates.NewPost(Post.FromEntity(postEntity));
+            await updates.NewPost(Post.FromEntity(postEntity));
 
             return Ok(Post.FromEntity(postEntity, userId));
         }
@@ -110,7 +101,7 @@ public class PostController : ControllerBase
     [SwaggerResponse(404, "Not Found")]
     public async Task<IActionResult> GetById(Ulid id)
     {
-        var post = await _posts.GetPostById(id);
+        var post = await posts.GetPostById(id);
         if (post is null)
         {
             return NotFound();
@@ -151,7 +142,7 @@ public class PostController : ControllerBase
             if (data.Media is not null)
             {
                 await using var file = data.Media.OpenReadStream();
-                postEntity = await _posts.ReplacePost(
+                postEntity = await posts.ReplacePost(
                     userId,
                     id,
                     data.Text,
@@ -159,13 +150,13 @@ public class PostController : ControllerBase
             }
             else
             {
-                postEntity = await _posts.ReplacePost(
+                postEntity = await posts.ReplacePost(
                     userId,
                     id,
                     data.Text);
             }
 
-            await _updates.PostUpdated(Post.FromEntity(postEntity));
+            await updates.PostUpdated(Post.FromEntity(postEntity));
 
             return Ok(Post.FromEntity(postEntity, userId));
         }
@@ -207,8 +198,8 @@ public class PostController : ControllerBase
             if (data.Text is not null)
             {
                 var userId = HttpContext.UserId();
-                var post = await _posts.UpdatePost(userId, id, data.Text);
-                await _updates.PostUpdated(Post.FromEntity(post));
+                var post = await posts.UpdatePost(userId, id, data.Text);
+                await updates.PostUpdated(Post.FromEntity(post));
             }
         }
         catch (PostNotFoundException)
@@ -242,8 +233,8 @@ public class PostController : ControllerBase
         try
         {
             var userId = HttpContext.UserId();
-            await _posts.DeletePost(userId, id);
-            await _updates.PostDeleted(id);
+            await posts.DeletePost(userId, id);
+            await updates.PostDeleted(id);
         }
         catch (PostNotFoundException)
         {
@@ -284,8 +275,8 @@ public class PostController : ControllerBase
         {
             await using var file = uploadData.Media.OpenReadStream();
             var userId = HttpContext.UserId();
-            var post = await _posts.UpdatePostMedia(userId, id, (file, uploadData.Media.ContentType));
-            await _updates.PostUpdated(Post.FromEntity(post));
+            var post = await posts.UpdatePostMedia(userId, id, (file, uploadData.Media.ContentType));
+            await updates.PostUpdated(Post.FromEntity(post));
 
             return Ok(post.MediaUrl);
         }
@@ -316,8 +307,8 @@ public class PostController : ControllerBase
         try
         {
             var userId = HttpContext.UserId();
-            var post = await _posts.UpdatePostMedia(userId, id);
-            await _updates.PostUpdated(Post.FromEntity(post));
+            var post = await posts.UpdatePostMedia(userId, id);
+            await updates.PostUpdated(Post.FromEntity(post));
         }
         catch (PostInvalidException)
         {
@@ -350,7 +341,7 @@ public class PostController : ControllerBase
     {
         try
         {
-            var (replies, total) = await _posts.GetPaginatedReplies(id, pagination);
+            var (replies, total) = await posts.GetPaginatedReplies(id, pagination);
             return Ok(new PaginatedResult<Reply>
             {
                 Count = Convert.ToUInt32(total),
@@ -404,7 +395,7 @@ public class PostController : ControllerBase
             if (data.Media is not null)
             {
                 await using var file = data.Media.OpenReadStream();
-                postEntity = await _posts.CreatePost(
+                postEntity = await posts.CreatePost(
                     userId,
                     id,
                     data.Text,
@@ -412,13 +403,13 @@ public class PostController : ControllerBase
             }
             else
             {
-                postEntity = await _posts.CreatePost(
+                postEntity = await posts.CreatePost(
                     userId,
                     id,
                     data.Text);
             }
 
-            await _updates.NewPost(Reply.FromEntity(postEntity));
+            await updates.NewPost(Reply.FromEntity(postEntity));
 
             return Ok(Reply.FromEntity(postEntity, userId));
         }
@@ -452,9 +443,9 @@ public class PostController : ControllerBase
         try
         {
             var userId = HttpContext.UserId();
-            if (await _posts.LikePost(userId, id))
+            if (await posts.LikePost(userId, id))
             {
-                await _updates.PostLiked(userId, id);
+                await updates.PostLiked(userId, id);
             }
 
             return NoContent();
@@ -480,9 +471,9 @@ public class PostController : ControllerBase
         try
         {
             var userId = HttpContext.UserId();
-            if (await _posts.UnlikePost(userId, id))
+            if (await posts.UnlikePost(userId, id))
             {
-                await _updates.PostUnliked(userId, id);
+                await updates.PostUnliked(userId, id);
             }
 
             return NoContent();

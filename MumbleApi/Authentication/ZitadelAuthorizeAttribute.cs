@@ -4,6 +4,4 @@ using Zitadel.Authentication;
 
 namespace MumbleApi.Authentication;
 
-public class ZitadelAuthorizeAttribute : AuthorizeAttribute
-{
-}
+public class ZitadelAuthorizeAttribute : AuthorizeAttribute;

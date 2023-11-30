@@ -8,18 +8,14 @@ using MumbleApi.Models;
 
 namespace MumbleApi.Services;
 
-internal class PostUpdates : ServerSentEventsService, IPostUpdates
+internal class PostUpdates(IOptions<ServerSentEventsServiceOptions<ServerSentEventsService>> options)
+    : ServerSentEventsService(options), IPostUpdates
 {
     private static readonly JsonSerializerOptions Json = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         DictionaryKeyPolicy = JsonNamingPolicy.CamelCase,
     };
-
-    public PostUpdates(IOptions<ServerSentEventsServiceOptions<ServerSentEventsService>> options)
-        : base(options)
-    {
-    }
 
     public Task NewPost(PostBase post)
         => SendEventAsync(new ServerSentEvent

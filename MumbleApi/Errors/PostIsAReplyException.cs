@@ -1,16 +1,18 @@
-﻿using System.Runtime.Serialization;
+﻿namespace MumbleApi.Errors;
 
-namespace MumbleApi.Errors;
-
-[Serializable]
 public class PostIsAReplyException : Exception
 {
     public PostIsAReplyException()
     {
     }
 
-    protected PostIsAReplyException(SerializationInfo info, StreamingContext context)
-        : base(info, context)
+    public PostIsAReplyException(string? message)
+        : base(message)
+    {
+    }
+
+    public PostIsAReplyException(string? message, Exception? innerException)
+        : base(message, innerException)
     {
     }
 }

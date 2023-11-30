@@ -10,20 +10,11 @@ using User = MumbleApi.Entities.User;
 
 namespace MumbleApi.Services;
 
-internal class Users : IUsers
+internal class Users(IDbContextFactory<DataContext> factory, IStorage storage) : IUsers
 {
-    private readonly IDbContextFactory<DataContext> _factory;
-    private readonly IStorage _storage;
-
-    public Users(IDbContextFactory<DataContext> factory, IStorage storage)
-    {
-        _factory = factory;
-        _storage = storage;
-    }
-
     public async Task<(IEnumerable<User> Users, int TotalCount)> GetPaginatedUsers(PaginationParameters pagination)
     {
-        await using var db = await _factory.CreateDbContextAsync();
+        await using var db = await factory.CreateDbContextAsync();
 
         var query = db.Users
             .OrderBy(u => u.Id);
@@ -39,13 +30,13 @@ internal class Users : IUsers
 
     public async Task<User?> GetUserById(string id)
     {
-        await using var db = await _factory.CreateDbContextAsync();
+        await using var db = await factory.CreateDbContextAsync();
         return await db.Users.SingleOrDefaultAsync(u => u.Id == id);
     }
 
     public async Task UpdateUser(string id, string? firstname, string? lastname, string? username)
     {
-        await using var db = await _factory.CreateDbContextAsync();
+        await using var db = await factory.CreateDbContextAsync();
         var user = await db.Users.SingleOrDefaultAsync(u => u.Id == id);
 
         if (user is null)
@@ -62,12 +53,12 @@ internal class Users : IUsers
 
     public async Task<string?> UpdateUserAvatar(string id, (Stream File, string MediaType)? avatar = null)
     {
-        await using var db = await _factory.CreateDbContextAsync();
+        await using var db = await factory.CreateDbContextAsync();
         var user = await db.Users.SingleAsync(u => u.Id == id);
 
         if (user.AvatarId is not null)
         {
-            await _storage.DeleteFileIfPossible(user.AvatarId);
+            await storage.DeleteFileIfPossible(user.AvatarId);
         }
 
         user.AvatarUrl = user.AvatarMediaType = null;
@@ -75,7 +66,7 @@ internal class Users : IUsers
         {
             user.AvatarMediaType = avatar.Value.MediaType;
             user.AvatarUrl =
-                await _storage.UploadFile(Guid.NewGuid().ToString(), avatar.Value.MediaType, avatar.Value.File);
+                await storage.UploadFile(Guid.NewGuid().ToString(), avatar.Value.MediaType, avatar.Value.File);
         }
 
         await db.SaveChangesAsync();
@@ -86,7 +77,7 @@ internal class Users : IUsers
         string id,
         PaginationParameters pagination)
     {
-        await using var db = await _factory.CreateDbContextAsync();
+        await using var db = await factory.CreateDbContextAsync();
 
         var query = db.Follows
             .Where(f => f.FolloweeId == id)
@@ -105,7 +96,7 @@ internal class Users : IUsers
         string id,
         PaginationParameters pagination)
     {
-        await using var db = await _factory.CreateDbContextAsync();
+        await using var db = await factory.CreateDbContextAsync();
 
         var query = db.Follows
             .Where(f => f.FollowerId == id)
@@ -122,7 +113,7 @@ internal class Users : IUsers
 
     public async Task FollowUser(string userId, string followeeId)
     {
-        await using var db = await _factory.CreateDbContextAsync();
+        await using var db = await factory.CreateDbContextAsync();
         try
         {
             await db.Database.ExecuteSqlInterpolatedAsync($@"
@@ -138,7 +129,7 @@ internal class Users : IUsers
 
     public async Task UnfollowUser(string userId, string followeeId)
     {
-        await using var db = await _factory.CreateDbContextAsync();
+        await using var db = await factory.CreateDbContextAsync();
 
         if (!await db.Users.AnyAsync(u => u.Id == followeeId))
         {

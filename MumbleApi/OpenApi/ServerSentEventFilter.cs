@@ -268,6 +268,9 @@ You may read more about server sent events in the
     {
         public Ulid PostId { get; set; }
 
+        /// <summary>
+        /// The userid of the user that liked the post.
+        /// </summary>
         /// <example>179944860378202369</example>
         public string UserId { get; set; } = string.Empty;
     }

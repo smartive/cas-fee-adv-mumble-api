@@ -1,5 +1,7 @@
 ﻿using System.Security.Claims;
 
+using MumbleApi.Errors;
+
 using Zitadel.Authentication;
 
 namespace MumbleApi.Application;
@@ -10,5 +12,5 @@ public static class HttpContextExtensions
         context.User.FindFirstValue(OidcClaimTypes.Subject);
 
     public static string UserId(this HttpContext context) => context.User.FindFirstValue(OidcClaimTypes.Subject) ??
-                                                             throw new Exception("No UserID Found.");
+                                                             throw new UserNotFoundException("No UserID Found.");
 }

@@ -4,13 +4,8 @@ using MumbleApi.Entities;
 
 namespace MumbleApi.Database;
 
-public class DataContext : DbContext
+public class DataContext(DbContextOptions options) : DbContext(options)
 {
-    public DataContext(DbContextOptions options)
-        : base(options)
-    {
-    }
-
 #nullable disable
 
     public DbSet<Post> Posts { get; set; }

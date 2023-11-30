@@ -1,16 +1,18 @@
-﻿using System.Runtime.Serialization;
+﻿namespace MumbleApi.Errors;
 
-namespace MumbleApi.Errors;
-
-[Serializable]
 public class PostInvalidException : Exception
 {
     public PostInvalidException()
     {
     }
 
-    protected PostInvalidException(SerializationInfo info, StreamingContext context)
-        : base(info, context)
+    public PostInvalidException(string? message)
+        : base(message)
+    {
+    }
+
+    public PostInvalidException(string? message, Exception? innerException)
+        : base(message, innerException)
     {
     }
 }

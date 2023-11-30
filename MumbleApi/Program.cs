@@ -1,3 +1,4 @@
+using System.Configuration;
 using System.Net;
 using System.Reflection;
 using System.Security.Claims;
@@ -21,6 +22,8 @@ using MumbleApi.Services;
 using Zitadel.Authentication;
 using Zitadel.Extensions;
 
+using IPNetwork = Microsoft.AspNetCore.HttpOverrides.IPNetwork;
+
 var builder = WebApplication.CreateBuilder(args);
 
 var config = builder.Configuration
@@ -28,7 +31,7 @@ var config = builder.Configuration
     .AddJsonFile("appsettings.Secrets.json", true)
     .Build()
 #endif
-    .Get<AppConfig>() ?? throw new("Could not read config.");
+    .Get<AppConfig>() ?? new();
 builder.Services.AddSingleton(config);
 
 builder.Services.AddLogging(

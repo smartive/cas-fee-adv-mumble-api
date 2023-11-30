@@ -22,6 +22,11 @@ end_of_line = crlf
 insert_final_newline = true
 
 #### Custom StyleCop Rules ####
+# https://rules.sonarsource.com/csharp/RSPEC-6608/
+dotnet_diagnostic.S6608.severity = None
+
+# https://rules.sonarsource.com/csharp/RSPEC-3925/
+dotnet_diagnostic.S3925.severity = None
 
 # https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA0001.md
 dotnet_diagnostic.SA0001.severity = None

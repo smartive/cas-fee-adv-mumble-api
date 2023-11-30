@@ -7,15 +7,8 @@ using MumbleApi.Models;
 
 namespace MumbleApi.Test.Controller;
 
-public class UserControllerTest : IClassFixture<WebAppFactory>
+public class UserControllerTest(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    private readonly WebAppFactory _factory;
-
-    public UserControllerTest(WebAppFactory factory)
-    {
-        _factory = factory;
-    }
-
     public static TheoryData<HttpMethod, string, HttpContent?, HttpStatusCode> ErroneousResultData =>
             new()
             {
@@ -111,7 +104,7 @@ public class UserControllerTest : IClassFixture<WebAppFactory>
     [InlineData("DELETE", "/users/id/followers")]
     public async Task ReturnsUnauthorizedOnProtectedRoute(string method, string uri)
     {
-        var client = _factory.CreateUnauthorizedClient();
+        var client = factory.CreateUnauthorizedClient();
         var result = await client.SendAsync(new HttpRequestMessage(new HttpMethod(method), uri));
         result.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -119,8 +112,8 @@ public class UserControllerTest : IClassFixture<WebAppFactory>
     [Fact]
     public async Task GetEmptyUsers()
     {
-        await _factory.PrepareTestData(TestData.Empty);
-        var client = _factory.CreateClient();
+        await factory.PrepareTestData(TestData.Empty);
+        var client = factory.CreateClient();
         var result = await client.GetFromJsonAsync<PaginatedResult<PublicUser>>("/users");
 
         if (result is null)
@@ -143,8 +136,8 @@ public class UserControllerTest : IClassFixture<WebAppFactory>
     {
         async Task Unauthed()
         {
-            await _factory.PrepareTestData(TestData.UsersWithFollowers);
-            var client = _factory.CreateUnauthorizedClient();
+            await factory.PrepareTestData(TestData.UsersWithFollowers);
+            var client = factory.CreateUnauthorizedClient();
 
             var result = await client.GetStringAsync(url);
             result.Should().NotContain("firstname");
@@ -152,8 +145,8 @@ public class UserControllerTest : IClassFixture<WebAppFactory>
 
         async Task Authed()
         {
-            await _factory.PrepareTestData(TestData.UsersWithFollowers);
-            var client = _factory.CreateClient();
+            await factory.PrepareTestData(TestData.UsersWithFollowers);
+            var client = factory.CreateClient();
 
             var result = await client.GetStringAsync(url);
             result.Should().Contain("firstname");
@@ -172,8 +165,8 @@ public class UserControllerTest : IClassFixture<WebAppFactory>
     [InlineData("/users/1337/followees?offset=0&limit=1", true, true)]
     public async Task PaginateCorrectly(string url, bool nextIsNull, bool prevIsNull)
     {
-        await _factory.PrepareTestData(TestData.UsersWithFollowers);
-        var client = _factory.CreateClient();
+        await factory.PrepareTestData(TestData.UsersWithFollowers);
+        var client = factory.CreateClient();
         var result = await client.GetFromJsonAsync<PaginatedResult<User>>(url);
 
         if (result is null)
@@ -188,8 +181,8 @@ public class UserControllerTest : IClassFixture<WebAppFactory>
     [Fact]
     public async Task UploadAvatar()
     {
-        await _factory.PrepareTestData(TestData.UsersWithFollowers);
-        var client = _factory.CreateClient();
+        await factory.PrepareTestData(TestData.UsersWithFollowers);
+        var client = factory.CreateClient();
         var request = new HttpRequestMessage(HttpMethod.Put, "/users/avatar")
         {
             Content = new MultipartFormDataContent
@@ -215,8 +208,8 @@ public class UserControllerTest : IClassFixture<WebAppFactory>
     [Fact]
     public async Task DeleteAvatar()
     {
-        await _factory.PrepareTestData(TestData.UsersWithFollowers);
-        var client = _factory.CreateUserClient(TestData.UserTestyTester.Id);
+        await factory.PrepareTestData(TestData.UsersWithFollowers);
+        var client = factory.CreateUserClient(TestData.UserTestyTester.Id);
         var result = await client.DeleteAsync("/users/avatar");
         result.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
@@ -227,8 +220,8 @@ public class UserControllerTest : IClassFixture<WebAppFactory>
     [Fact]
     public async Task UpdateProfile()
     {
-        await _factory.PrepareTestData(TestData.UsersWithFollowers);
-        var client = _factory.CreateClient();
+        await factory.PrepareTestData(TestData.UsersWithFollowers);
+        var client = factory.CreateClient();
         var request = new HttpRequestMessage(HttpMethod.Patch, "/users")
         {
             Content = JsonContent.Create(new
@@ -251,8 +244,8 @@ public class UserControllerTest : IClassFixture<WebAppFactory>
     [Fact]
     public async Task FollowUser()
     {
-        await _factory.PrepareTestData(TestData.UsersWithFollowers);
-        var client = _factory.CreateClient();
+        await factory.PrepareTestData(TestData.UsersWithFollowers);
+        var client = factory.CreateClient();
         var result = await client.PutAsync($"/users/{TestData.UserJackJohnson.Id}/followers", null);
         result.StatusCode.Should().Be(HttpStatusCode.NoContent);
         result = await client.PutAsync($"/users/{TestData.UserJackJohnson.Id}/followers", null);
@@ -265,8 +258,8 @@ public class UserControllerTest : IClassFixture<WebAppFactory>
     [Fact]
     public async Task UnfollowUser()
     {
-        await _factory.PrepareTestData(TestData.UsersWithFollowers);
-        var client = _factory.CreateClient();
+        await factory.PrepareTestData(TestData.UsersWithFollowers);
+        var client = factory.CreateClient();
         var result = await client.DeleteAsync($"/users/{TestData.UserTestyTester.Id}/followers");
         result.StatusCode.Should().Be(HttpStatusCode.NoContent);
         result = await client.DeleteAsync($"/users/{TestData.UserTestyTester.Id}/followers");
@@ -280,12 +273,10 @@ public class UserControllerTest : IClassFixture<WebAppFactory>
     [MemberData(nameof(ErroneousResultData))]
     public async Task ErroneousResult(HttpMethod method, string url, HttpContent? content, HttpStatusCode result)
     {
-        await _factory.PrepareTestData(TestData.UsersWithFollowers);
-        var client = _factory.CreateClient();
-        using var request = new HttpRequestMessage(method, url)
-        {
-            Content = content,
-        };
+        await factory.PrepareTestData(TestData.UsersWithFollowers);
+        var client = factory.CreateClient();
+        using var request = new HttpRequestMessage(method, url);
+        request.Content = content;
 
         var response = await client.SendAsync(request);
         response.StatusCode.Should().Be(result);

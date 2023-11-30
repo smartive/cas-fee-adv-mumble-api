@@ -2,10 +2,5 @@
 
 namespace MumbleApi.Database;
 
-public class UlidConverter : ValueConverter<Ulid, string>
-{
-    public UlidConverter()
-        : base(ulid => ulid.ToString(), @string => Ulid.Parse(@string))
-    {
-    }
-}
+public class UlidConverter() : ValueConverter<Ulid, string>(ulid => ulid.ToString() ?? string.Empty,
+    @string => Ulid.Parse(@string));

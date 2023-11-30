@@ -5,20 +5,13 @@ using MumbleApi.Models;
 
 namespace MumbleApi.Test.Services;
 
-public class PostUpdatesTest : IClassFixture<WebAppFactory>
+public class PostUpdatesTest(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
     private static readonly JsonSerializerOptions Json = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         DictionaryKeyPolicy = JsonNamingPolicy.CamelCase,
     };
-
-    private readonly WebAppFactory _factory;
-
-    public PostUpdatesTest(WebAppFactory factory)
-    {
-        _factory = factory;
-    }
 
     public static TheoryData<HttpMethod, string, HttpContent?, Func<ServerEvent<Post>?, bool>>
         ReceiveCorrectPostEventData => new()
@@ -101,15 +94,15 @@ public class PostUpdatesTest : IClassFixture<WebAppFactory>
         HttpContent? content,
         Func<ServerEvent<Post>?, bool> verify)
     {
-        await _factory.PrepareTestData(TestData.PostsWithLikes);
-        var client = _factory.CreateClient();
+        await factory.PrepareTestData(TestData.PostsWithLikes);
+        var client = factory.CreateClient();
 
         await using var eventStream = await client.GetStreamAsync("/posts/_sse");
 
         using var request = new HttpRequestMessage(
             method,
-            url)
-        { Content = content, };
+            url);
+        request.Content = content;
 
         await client.SendAsync(request);
         var result = await GetServerEvent<Post>(eventStream);
@@ -125,15 +118,15 @@ public class PostUpdatesTest : IClassFixture<WebAppFactory>
         HttpContent? content,
         Func<ServerEvent<ServerLikeEvent>?, bool> verify)
     {
-        await _factory.PrepareTestData(TestData.PostsWithLikes);
-        var client = _factory.CreateClient();
+        await factory.PrepareTestData(TestData.PostsWithLikes);
+        var client = factory.CreateClient();
 
         await using var eventStream = await client.GetStreamAsync("/posts/_sse");
 
         using var request = new HttpRequestMessage(
             method,
-            url)
-        { Content = content, };
+            url);
+        request.Content = content;
 
         await client.SendAsync(request);
         var result = await GetServerEvent<ServerLikeEvent>(eventStream);
@@ -144,8 +137,8 @@ public class PostUpdatesTest : IClassFixture<WebAppFactory>
     [Fact]
     public async Task ReceiveCorrectPostDeletedEvent()
     {
-        await _factory.PrepareTestData(TestData.PostsWithLikes);
-        var client = _factory.CreateClient();
+        await factory.PrepareTestData(TestData.PostsWithLikes);
+        var client = factory.CreateClient();
 
         await using var eventStream = await client.GetStreamAsync("/posts/_sse");
 
@@ -172,7 +165,7 @@ public class PostUpdatesTest : IClassFixture<WebAppFactory>
         var ev = new ServerEvent<T>();
         while (!sr.EndOfStream)
         {
-            var cts = new CancellationTokenSource(1000);
+            using var cts = new CancellationTokenSource(1000);
             switch (await sr.ReadLineAsync(cts.Token))
             {
                 case "":

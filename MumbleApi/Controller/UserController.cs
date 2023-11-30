@@ -15,15 +15,8 @@ namespace MumbleApi.Controller;
 [OptionalZitadelAuthorize]
 [Produces("application/json")]
 [SwaggerTag("Users in the Mumble System.")]
-public class UserController : ControllerBase
+public class UserController(IUsers users) : ControllerBase
 {
-    private readonly IUsers _users;
-
-    public UserController(IUsers users)
-    {
-        _users = users;
-    }
-
     /// <summary>
     /// Fetch a paginated list of users.
     /// </summary>
@@ -34,7 +27,7 @@ public class UserController : ControllerBase
     [SwaggerResponse(200, "Success", typeof(PaginatedResult<User>))]
     public async Task<IActionResult> Get([FromQuery] PaginationParameters pagination)
     {
-        var (users, total) = await _users.GetPaginatedUsers(pagination);
+        var (dbUsers, total) = await users.GetPaginatedUsers(pagination);
         var loggedIn = HttpContext.User.Identity?.IsAuthenticated == true;
 
         var next = total > pagination.Offset + pagination.Limit
@@ -48,14 +41,14 @@ public class UserController : ControllerBase
             ? Ok(new PaginatedResult<User>
             {
                 Count = Convert.ToUInt32(total),
-                Data = users.Select(Models.User.FromEntity).ToList(),
+                Data = dbUsers.Select(Models.User.FromEntity).ToList(),
                 Next = next,
                 Previous = prev,
             })
             : Ok(new PaginatedResult<PublicUser>
             {
                 Count = Convert.ToUInt32(total),
-                Data = users.Select(PublicUser.FromEntity).ToList(),
+                Data = dbUsers.Select(PublicUser.FromEntity).ToList(),
                 Next = next,
                 Previous = prev,
             });
@@ -72,7 +65,7 @@ public class UserController : ControllerBase
     [SwaggerResponse(404, "Not Found")]
     public async Task<IActionResult> GetById(string id)
     {
-        var user = await _users.GetUserById(id);
+        var user = await users.GetUserById(id);
         if (user is null)
         {
             return NotFound();
@@ -114,7 +107,7 @@ public class UserController : ControllerBase
 
         try
         {
-            await _users.UpdateUser(HttpContext.UserId(), data.Firstname, data.Lastname, data.Username);
+            await users.UpdateUser(HttpContext.UserId(), data.Firstname, data.Lastname, data.Username);
             return NoContent();
         }
         catch (UserNotFoundException)
@@ -145,7 +138,7 @@ public class UserController : ControllerBase
         }
 
         await using var file = data.Media.OpenReadStream();
-        var newUrl = await _users.UpdateUserAvatar(HttpContext.UserId(), (file, data.Media.ContentType));
+        var newUrl = await users.UpdateUserAvatar(HttpContext.UserId(), (file, data.Media.ContentType));
 
         return Ok(newUrl);
     }
@@ -160,7 +153,7 @@ public class UserController : ControllerBase
     [SwaggerResponse(204, "Success - No Content")]
     public async Task<IActionResult> DeleteAvatar()
     {
-        await _users.UpdateUserAvatar(HttpContext.UserId());
+        await users.UpdateUserAvatar(HttpContext.UserId());
         return NoContent();
     }
 
@@ -175,7 +168,7 @@ public class UserController : ControllerBase
     [SwaggerResponse(200, "Success", typeof(PaginatedResult<User>))]
     public async Task<IActionResult> GetFollowers(string id, [FromQuery] PaginationParameters pagination)
     {
-        var (followers, total) = await _users.GetPaginatedFollowers(id, pagination);
+        var (followers, total) = await users.GetPaginatedFollowers(id, pagination);
         var loggedIn = User.Identity?.IsAuthenticated == true;
 
         var next = total > pagination.Offset + pagination.Limit
@@ -213,7 +206,7 @@ public class UserController : ControllerBase
     [SwaggerResponse(200, "Success", typeof(PaginatedResult<User>))]
     public async Task<IActionResult> GetFollowees(string id, [FromQuery] PaginationParameters pagination)
     {
-        var (followees, total) = await _users.GetPaginatedFollowees(id, pagination);
+        var (followees, total) = await users.GetPaginatedFollowees(id, pagination);
         var loggedIn = User.Identity?.IsAuthenticated == true;
 
         var next = total > pagination.Offset + pagination.Limit
@@ -254,7 +247,7 @@ public class UserController : ControllerBase
     {
         try
         {
-            await _users.FollowUser(HttpContext.UserId(), id);
+            await users.FollowUser(HttpContext.UserId(), id);
             return NoContent();
         }
         catch (UserNotFoundException)
@@ -276,7 +269,7 @@ public class UserController : ControllerBase
     {
         try
         {
-            await _users.UnfollowUser(HttpContext.UserId(), id);
+            await users.UnfollowUser(HttpContext.UserId(), id);
             return NoContent();
         }
         catch (UserNotFoundException)

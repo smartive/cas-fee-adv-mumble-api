@@ -10,21 +10,12 @@ using Post = MumbleApi.Entities.Post;
 
 namespace MumbleApi.Services;
 
-internal class Posts : IPosts
+internal class Posts(IDbContextFactory<DataContext> factory, IStorage storage) : IPosts
 {
-    private readonly IDbContextFactory<DataContext> _factory;
-    private readonly IStorage _storage;
-
-    public Posts(IDbContextFactory<DataContext> factory, IStorage storage)
-    {
-        _factory = factory;
-        _storage = storage;
-    }
-
     public async Task<(IEnumerable<Post> Posts, int TotalCount)> GetPaginatedPostsWithLikes(
         PostSearchParameters parameters)
     {
-        await using var db = await _factory.CreateDbContextAsync();
+        await using var db = await factory.CreateDbContextAsync();
 
         var query = db.Posts
             .Include(p => p.Replies)
@@ -80,7 +71,7 @@ internal class Posts : IPosts
 
     public async Task<Post?> GetPostById(Ulid id)
     {
-        await using var db = await _factory.CreateDbContextAsync();
+        await using var db = await factory.CreateDbContextAsync();
 
         var query = db.Posts
             .Include(p => p.Replies)
@@ -104,7 +95,7 @@ internal class Posts : IPosts
             throw new PostInvalidException();
         }
 
-        await using var db = await _factory.CreateDbContextAsync();
+        await using var db = await factory.CreateDbContextAsync();
 
         if (parentId is not null)
         {
@@ -133,7 +124,7 @@ internal class Posts : IPosts
         {
             post.MediaType = media.Value.MediaType;
             post.MediaUrl =
-                await _storage.UploadFile(Guid.NewGuid().ToString(), media.Value.MediaType, media.Value.File);
+                await storage.UploadFile(Guid.NewGuid().ToString(), media.Value.MediaType, media.Value.File);
         }
 
         await db.Posts.AddAsync(post);
@@ -153,7 +144,7 @@ internal class Posts : IPosts
             throw new PostInvalidException();
         }
 
-        await using var db = await _factory.CreateDbContextAsync();
+        await using var db = await factory.CreateDbContextAsync();
 
         var post = await db.Posts
             .Include(p => p.Replies)
@@ -176,7 +167,7 @@ internal class Posts : IPosts
         post.Text = text;
         if (post.MediaId is not null)
         {
-            await _storage.DeleteFileIfPossible(post.MediaId);
+            await storage.DeleteFileIfPossible(post.MediaId);
         }
 
         post.MediaType = post.MediaUrl = null;
@@ -185,7 +176,7 @@ internal class Posts : IPosts
         {
             post.MediaType = media.Value.MediaType;
             post.MediaUrl =
-                await _storage.UploadFile(Guid.NewGuid().ToString(), media.Value.MediaType, media.Value.File);
+                await storage.UploadFile(Guid.NewGuid().ToString(), media.Value.MediaType, media.Value.File);
         }
 
         await db.SaveChangesAsync();
@@ -194,7 +185,7 @@ internal class Posts : IPosts
 
     public async Task<Post> UpdatePost(string userId, Ulid postId, string text)
     {
-        await using var db = await _factory.CreateDbContextAsync();
+        await using var db = await factory.CreateDbContextAsync();
 
         var post = await db.Posts
             .Include(p => p.Replies)
@@ -227,7 +218,7 @@ internal class Posts : IPosts
 
     public async Task<Post> UpdatePostMedia(string userId, Ulid postId, (Stream File, string MediaType)? media = null)
     {
-        await using var db = await _factory.CreateDbContextAsync();
+        await using var db = await factory.CreateDbContextAsync();
 
         var post = await db.Posts
             .Include(p => p.Replies)
@@ -254,7 +245,7 @@ internal class Posts : IPosts
 
         if (post.MediaId is not null)
         {
-            await _storage.DeleteFileIfPossible(post.MediaId);
+            await storage.DeleteFileIfPossible(post.MediaId);
         }
 
         post.MediaType = post.MediaUrl = null;
@@ -262,7 +253,7 @@ internal class Posts : IPosts
         {
             post.MediaType = media.Value.MediaType;
             post.MediaUrl =
-                await _storage.UploadFile(Guid.NewGuid().ToString(), media.Value.MediaType, media.Value.File);
+                await storage.UploadFile(Guid.NewGuid().ToString(), media.Value.MediaType, media.Value.File);
         }
 
         await db.SaveChangesAsync();
@@ -271,7 +262,7 @@ internal class Posts : IPosts
 
     public async Task DeletePost(string userId, Ulid postId)
     {
-        await using var db = await _factory.CreateDbContextAsync();
+        await using var db = await factory.CreateDbContextAsync();
 
         var post = await db.Posts
             .Where(p => p.Id == postId)
@@ -295,7 +286,7 @@ internal class Posts : IPosts
 
     public async Task<bool> LikePost(string userId, Ulid postId)
     {
-        await using var db = await _factory.CreateDbContextAsync();
+        await using var db = await factory.CreateDbContextAsync();
 
         if (await db.Posts.SingleOrDefaultAsync(p => p.Id == postId && p.Deleted == null) is null)
         {
@@ -312,7 +303,7 @@ internal class Posts : IPosts
 
     public async Task<bool> UnlikePost(string userId, Ulid postId)
     {
-        await using var db = await _factory.CreateDbContextAsync();
+        await using var db = await factory.CreateDbContextAsync();
 
         if (await db.Posts.SingleOrDefaultAsync(p => p.Id == postId && p.Deleted == null) is null)
         {
@@ -330,7 +321,7 @@ internal class Posts : IPosts
         Ulid postId,
         PaginationParameters pagination)
     {
-        await using var db = await _factory.CreateDbContextAsync();
+        await using var db = await factory.CreateDbContextAsync();
 
         var parent = await db.Posts.SingleOrDefaultAsync(p => p.Id == postId);
 

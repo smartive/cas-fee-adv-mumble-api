@@ -1,8 +1,5 @@
-﻿using System.Runtime.Serialization;
+﻿namespace MumbleApi.Errors;
 
-namespace MumbleApi.Errors;
-
-[Serializable]
 public class StorageException : Exception
 {
     public StorageException()
@@ -14,8 +11,8 @@ public class StorageException : Exception
     {
     }
 
-    protected StorageException(SerializationInfo info, StreamingContext context)
-        : base(info, context)
+    public StorageException(string? message, Exception? innerException)
+        : base(message, innerException)
     {
     }
 }

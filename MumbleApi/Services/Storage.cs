@@ -9,16 +9,10 @@ using MumbleApi.Errors;
 
 namespace MumbleApi.Services;
 
-internal class Storage : IStorage
+internal class Storage(AppConfig config) : IStorage
 {
-    private readonly string _bucketName;
-    private readonly StorageClient _gcs;
-
-    public Storage(AppConfig config)
-    {
-        _bucketName = config.Storage.Bucket;
-        _gcs = StorageClient.Create(GoogleCredential.FromJson(config.Storage.ServiceAccountKey));
-    }
+    private readonly string _bucketName = config.Storage.Bucket;
+    private readonly StorageClient _gcs = StorageClient.Create(GoogleCredential.FromJson(config.Storage.ServiceAccountKey));
 
     public async Task<string> UploadFile(string filename, string contentType, Stream file)
     {

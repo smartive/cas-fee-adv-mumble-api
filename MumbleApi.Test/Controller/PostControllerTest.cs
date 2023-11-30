@@ -9,16 +9,9 @@ using MumbleApi.Models;
 
 namespace MumbleApi.Test.Controller;
 
-public class PostControllerTest : IClassFixture<WebAppFactory>
+public class PostControllerTest(WebAppFactory factory) : IClassFixture<WebAppFactory>
 {
-    private readonly WebAppFactory _factory;
-
-    public PostControllerTest(WebAppFactory factory)
-    {
-        _factory = factory;
-    }
-
-    public static TheoryData<string, HttpContent, Action<PostBase>> CreatePostData =>
+    public static TheoryData<string, MultipartFormDataContent, Action<PostBase>> CreatePostData =>
             new()
             {
             // Create a post with text only.
@@ -29,7 +22,7 @@ public class PostControllerTest : IClassFixture<WebAppFactory>
                         new StringContent("new post text"), "text"
                     },
                 },
-                result => { result.Text.Should().Be("new post text"); }
+                result => result.Text.Should().Be("new post text")
             },
 
             // Create post with media only.
@@ -536,7 +529,7 @@ public class PostControllerTest : IClassFixture<WebAppFactory>
             },
             };
 
-    public static TheoryData<HttpContent, Action<PostBase>> ReplacePostData =>
+    public static TheoryData<MultipartFormDataContent, Action<PostBase>> ReplacePostData =>
             new()
             {
             // Create a post with text only.
@@ -606,7 +599,7 @@ public class PostControllerTest : IClassFixture<WebAppFactory>
     [InlineData("DELETE", "/posts/id/likes")]
     public async Task ReturnsUnauthorizedOnProtectedRoute(string method, string uri)
     {
-        var client = _factory.CreateUnauthorizedClient();
+        var client = factory.CreateUnauthorizedClient();
         var result = await client.SendAsync(new HttpRequestMessage(new HttpMethod(method), uri));
         result.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -614,8 +607,8 @@ public class PostControllerTest : IClassFixture<WebAppFactory>
     [Fact]
     public async Task FetchEmptyPosts()
     {
-        await _factory.PrepareTestData(TestData.Empty);
-        var client = _factory.CreateClient();
+        await factory.PrepareTestData(TestData.Empty);
+        var client = factory.CreateClient();
         var result = await client.GetFromJsonAsync<PaginatedResult<Post>>("/posts");
 
         if (result is null)
@@ -638,8 +631,8 @@ public class PostControllerTest : IClassFixture<WebAppFactory>
     [InlineData("/posts/00000000000000000000000002/replies?offset=2&limit=1", true, false)]
     public async Task PaginateCorrectly(string url, bool nextIsNull, bool prevIsNull)
     {
-        await _factory.PrepareTestData(TestData.PostsWithoutLikes);
-        var client = _factory.CreateClient();
+        await factory.PrepareTestData(TestData.PostsWithoutLikes);
+        var client = factory.CreateClient();
         var result = await client.GetFromJsonAsync<PaginatedResult<Post>>(url);
 
         if (result is null)
@@ -656,8 +649,8 @@ public class PostControllerTest : IClassFixture<WebAppFactory>
     [InlineData("/posts/00000000000000000000000002/replies")]
     public async Task NoInfoAboutLikeWithoutAuth(string url)
     {
-        await _factory.PrepareTestData(TestData.PostsWithoutLikes);
-        var client = _factory.CreateUnauthorizedClient();
+        await factory.PrepareTestData(TestData.PostsWithoutLikes);
+        var client = factory.CreateUnauthorizedClient();
         var result = await client.GetFromJsonAsync<PaginatedResult<Post>>(url);
 
         if (result is null)
@@ -673,8 +666,8 @@ public class PostControllerTest : IClassFixture<WebAppFactory>
     [InlineData("/posts/00000000000000000000000002/replies")]
     public async Task ContainInfoAboutLikeWithAuth(string url)
     {
-        await _factory.PrepareTestData(TestData.PostsWithoutLikes);
-        var client = _factory.CreateClient();
+        await factory.PrepareTestData(TestData.PostsWithoutLikes);
+        var client = factory.CreateClient();
         var result = await client.GetFromJsonAsync<PaginatedResult<Post>>(url);
 
         if (result is null)
@@ -689,12 +682,10 @@ public class PostControllerTest : IClassFixture<WebAppFactory>
     [MemberData(nameof(CreatePostData))]
     public async Task CreatePost(string url, MultipartFormDataContent content, Action<PostBase> verify)
     {
-        await _factory.PrepareTestData(TestData.PostsWithoutLikes);
-        var client = _factory.CreateClient();
-        using var request = new HttpRequestMessage(HttpMethod.Post, url)
-        {
-            Content = content,
-        };
+        await factory.PrepareTestData(TestData.PostsWithoutLikes);
+        var client = factory.CreateClient();
+        using var request = new HttpRequestMessage(HttpMethod.Post, url);
+        request.Content = content;
 
         var response = await client.SendAsync(request);
         var result = await response.EnsureSuccessStatusCode().Content.ReadFromJsonAsync<PostBase>();
@@ -713,12 +704,10 @@ public class PostControllerTest : IClassFixture<WebAppFactory>
     [MemberData(nameof(ErroneousResultData))]
     public async Task ErroneousResult(HttpMethod method, string url, HttpContent? content, HttpStatusCode result)
     {
-        await _factory.PrepareTestData(TestData.PostsWithoutLikes);
-        var client = _factory.CreateClient();
-        using var request = new HttpRequestMessage(method, url)
-        {
-            Content = content,
-        };
+        await factory.PrepareTestData(TestData.PostsWithoutLikes);
+        var client = factory.CreateClient();
+        using var request = new HttpRequestMessage(method, url);
+        request.Content = content;
 
         var response = await client.SendAsync(request);
         response.StatusCode.Should().Be(result);
@@ -727,8 +716,8 @@ public class PostControllerTest : IClassFixture<WebAppFactory>
     [Fact]
     public async Task FetchPostById()
     {
-        await _factory.PrepareTestData(TestData.PostsWithoutLikes);
-        var client = _factory.CreateUnauthorizedClient();
+        await factory.PrepareTestData(TestData.PostsWithoutLikes);
+        var client = factory.CreateUnauthorizedClient();
         var result = await client.GetFromJsonAsync<Post>("/posts/00000000000000000000000001");
 
         if (result is null)
@@ -743,8 +732,8 @@ public class PostControllerTest : IClassFixture<WebAppFactory>
     [Fact]
     public async Task FetchPostByIdWithLikeInfo()
     {
-        await _factory.PrepareTestData(TestData.PostsWithoutLikes);
-        var client = _factory.CreateClient();
+        await factory.PrepareTestData(TestData.PostsWithoutLikes);
+        var client = factory.CreateClient();
         var result = await client.GetFromJsonAsync<Post>("/posts/00000000000000000000000001");
 
         if (result is null)
@@ -760,12 +749,10 @@ public class PostControllerTest : IClassFixture<WebAppFactory>
     [MemberData(nameof(ReplacePostData))]
     public async Task ReplacePost(MultipartFormDataContent content, Action<PostBase> verify)
     {
-        await _factory.PrepareTestData(TestData.PostsWithoutLikes);
-        var client = _factory.CreateClient();
-        using var request = new HttpRequestMessage(HttpMethod.Put, "/posts/00000000000000000000000001")
-        {
-            Content = content,
-        };
+        await factory.PrepareTestData(TestData.PostsWithoutLikes);
+        var client = factory.CreateClient();
+        using var request = new HttpRequestMessage(HttpMethod.Put, "/posts/00000000000000000000000001");
+        request.Content = content;
 
         var response = await client.SendAsync(request);
         var result = await response.EnsureSuccessStatusCode().Content.ReadFromJsonAsync<PostBase>();
@@ -782,12 +769,10 @@ public class PostControllerTest : IClassFixture<WebAppFactory>
     [Fact]
     public async Task PatchPostWithText()
     {
-        await _factory.PrepareTestData(TestData.PostsWithoutLikes);
-        var client = _factory.CreateClient();
-        using var request = new HttpRequestMessage(HttpMethod.Patch, "/posts/00000000000000000000000001")
-        {
-            Content = new StringContent(@"{""text"": ""new post text""}", new MediaTypeHeaderValue("application/json")),
-        };
+        await factory.PrepareTestData(TestData.PostsWithoutLikes);
+        var client = factory.CreateClient();
+        using var request = new HttpRequestMessage(HttpMethod.Patch, "/posts/00000000000000000000000001");
+        request.Content = new StringContent("""{"text": "new post text"}""", new MediaTypeHeaderValue("application/json"));
 
         var response = await client.SendAsync(request);
         response.StatusCode.Should().Be(HttpStatusCode.NoContent);
@@ -799,8 +784,8 @@ public class PostControllerTest : IClassFixture<WebAppFactory>
     [Fact]
     public async Task DeleteAPost()
     {
-        await _factory.PrepareTestData(TestData.PostsWithoutLikes);
-        var client = _factory.CreateClient();
+        await factory.PrepareTestData(TestData.PostsWithoutLikes);
+        var client = factory.CreateClient();
         var response = await client.DeleteAsync("/posts/00000000000000000000000001");
         response.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
@@ -811,8 +796,8 @@ public class PostControllerTest : IClassFixture<WebAppFactory>
     [Fact]
     public async Task AttachMediaOnPost()
     {
-        await _factory.PrepareTestData(TestData.PostsWithoutLikes);
-        var client = _factory.CreateClient();
+        await factory.PrepareTestData(TestData.PostsWithoutLikes);
+        var client = factory.CreateClient();
         var response = await client.PutAsync("/posts/00000000000000000000000001/media", new MultipartFormDataContent
         {
             {
@@ -835,8 +820,8 @@ public class PostControllerTest : IClassFixture<WebAppFactory>
     [Fact]
     public async Task ReplaceMediaOnPost()
     {
-        await _factory.PrepareTestData(TestData.PostsWithoutLikes);
-        var client = _factory.CreateClient();
+        await factory.PrepareTestData(TestData.PostsWithoutLikes);
+        var client = factory.CreateClient();
         var response = await client.PutAsync("/posts/00000000000000000000000002/media", new MultipartFormDataContent
         {
             {
@@ -859,8 +844,8 @@ public class PostControllerTest : IClassFixture<WebAppFactory>
     [Fact]
     public async Task DeleteMediaFromPost()
     {
-        await _factory.PrepareTestData(TestData.PostsWithoutLikes);
-        var client = _factory.CreateClient();
+        await factory.PrepareTestData(TestData.PostsWithoutLikes);
+        var client = factory.CreateClient();
         var response = await client.DeleteAsync("/posts/00000000000000000000000003/media");
         response.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
@@ -871,8 +856,8 @@ public class PostControllerTest : IClassFixture<WebAppFactory>
     [Fact]
     public async Task LikePost()
     {
-        await _factory.PrepareTestData(TestData.PostsWithoutLikes);
-        var client = _factory.CreateClient();
+        await factory.PrepareTestData(TestData.PostsWithoutLikes);
+        var client = factory.CreateClient();
 
         // Perform the put twice to see if it's idempotent.
         var response = await client.PutAsync("/posts/00000000000000000000000001/likes", null);
@@ -887,8 +872,8 @@ public class PostControllerTest : IClassFixture<WebAppFactory>
     [Fact]
     public async Task UnlikePost()
     {
-        await _factory.PrepareTestData(TestData.PostsWithLikes);
-        var client = _factory.CreateClient();
+        await factory.PrepareTestData(TestData.PostsWithLikes);
+        var client = factory.CreateClient();
 
         var result = await client.GetFromJsonAsync<Post>("/posts/00000000000000000000000001");
         result?.LikedBySelf.Should().BeTrue();
