@@ -20,4 +20,12 @@ is done via OIDC and the API expects a valid JWT/Opaque token in the
 The API is deployed on Google Cloud Run.
 Swagger / OpenAPI Documentation is available.
 
-TBD.
+Access the documentation on the following URL:
+[https://mumble-api-prod-4cxdci3drq-oa.a.run.app/index.html](https://mumble-api-prod-4cxdci3drq-oa.a.run.app/index.html)
+
+## Using own frontend
+
+All authenticated calls require a valid opaque OIDC token. To get a token,
+you receive a ZITADEL organization and a project grant to your organization.
+You then may configure your application by yourself and use the API with the
+fetched tokens.
