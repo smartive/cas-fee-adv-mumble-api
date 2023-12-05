@@ -1,4 +1,3 @@
-using System.Configuration;
 using System.Net;
 using System.Reflection;
 using System.Security.Claims;
@@ -31,7 +30,7 @@ var config = builder.Configuration
     .AddJsonFile("appsettings.Secrets.json", true)
     .Build()
 #endif
-    .Get<AppConfig>() ?? new();
+    .Get<AppConfig>() ?? throw new("App Config Not Loaded.");
 builder.Services.AddSingleton(config);
 
 builder.Services.AddLogging(
@@ -39,12 +38,7 @@ builder.Services.AddLogging(
 #if DEBUG
         .AddConsole()
 #else
-        .AddJsonConsole(
-            c =>
-            {
-                c.UseUtcTimestamp = true;
-                c.TimestampFormat = "dd.MM.yyyy - HH:mm:ss";
-            })
+        .AddSystemdConsole(c => c.UseUtcTimestamp = true)
 #endif
         .AddConfiguration(builder.Configuration));
 

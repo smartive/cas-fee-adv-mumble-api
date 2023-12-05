@@ -25,6 +25,9 @@ insert_final_newline = true
 # https://rules.sonarsource.com/csharp/RSPEC-6608/
 dotnet_diagnostic.S6608.severity = None
 
+# https://rules.sonarsource.com/csharp/RSPEC-112/
+dotnet_diagnostic.S112.severity = None
+
 # https://rules.sonarsource.com/csharp/RSPEC-3925/
 dotnet_diagnostic.S3925.severity = None
 
