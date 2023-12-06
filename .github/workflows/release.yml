@@ -57,7 +57,7 @@ jobs:
         with:
           credentials_json: "${{ secrets.GOOGLE_DEPLOYER }}"
 
-      - uses: hashicorp/setup-terraform@v2
+      - uses: hashicorp/setup-terraform@v3
 
       - run: terraform init
         working-directory: infrastructure
