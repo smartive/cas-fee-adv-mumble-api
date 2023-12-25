@@ -13,7 +13,7 @@
       <PackageReference Include="Community.Microsoft.Extensions.Caching.PostgreSql" Version="4.0.4" />
       <PackageReference Include="EFCore.NamingConventions" Version="8.0.0-rc.2" />
       <PackageReference Include="Google.Cloud.Storage.V1" Version="4.7.0" />
-      <PackageReference Include="Lib.AspNetCore.ServerSentEvents" Version="8.3.1" />
+      <PackageReference Include="Lib.AspNetCore.ServerSentEvents" Version="9.0.0" />
       <PackageReference Include="LinqKit" Version="1.2.5" />
       <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.0" PrivateAssets="All" />
       <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.0" />
