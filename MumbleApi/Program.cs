@@ -70,7 +70,11 @@ builder.Services
     {
         o.Authority = config.Authentication.Issuer;
         o.JwtProfile = config.Authentication.ApplicationCredentials;
+#if DEBUG
+        o.EnableCaching = false;
+#else
         o.EnableCaching = true;
+#endif
         o.CacheDuration = TimeSpan.FromHours(6);
         o.Events.OnTokenValidated += async context =>
         {
