@@ -1,3 +1,4 @@
+using System.Configuration;
 using System.Net;
 using System.Reflection;
 using System.Security.Claims;
@@ -30,7 +31,7 @@ var config = builder.Configuration
     .AddJsonFile("appsettings.Secrets.json", true)
     .Build()
 #endif
-    .Get<AppConfig>() ?? throw new("App Config Not Loaded.");
+    .Get<AppConfig>() ?? throw new ConfigurationErrorsException("App Config Not Loaded.");
 builder.Services.AddSingleton(config);
 
 builder.Services.AddLogging(
@@ -207,6 +208,9 @@ app.UseSwaggerUI(o =>
 
 await app.RunAsync();
 
+/// <summary>
+/// Main entrypoint (used for testing).
+/// </summary>
 public partial class Program
 {
     protected Program()

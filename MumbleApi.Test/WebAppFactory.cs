@@ -19,7 +19,7 @@ public class WebAppFactory : WebApplicationFactory<Program>
 {
     public async Task PrepareTestData(Func<DataContext, Task> action)
     {
-        await using var scope = this.Services.CreateAsyncScope();
+        await using var scope = Services.CreateAsyncScope();
         var factory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<DataContext>>();
         await using var context = await factory.CreateDbContextAsync();
         await context.Database.EnsureDeletedAsync();
@@ -30,14 +30,14 @@ public class WebAppFactory : WebApplicationFactory<Program>
 
     public HttpClient CreateUnauthorizedClient()
     {
-        var client = this.CreateClient();
+        var client = CreateClient();
         client.DefaultRequestHeaders.Add("x-zitadel-fake-auth", "false");
         return client;
     }
 
     public HttpClient CreateUserClient(string userId)
     {
-        var client = this.CreateClient();
+        var client = CreateClient();
         client.DefaultRequestHeaders.Add("x-zitadel-fake-user-id", userId);
         return client;
     }

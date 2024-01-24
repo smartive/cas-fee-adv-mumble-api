@@ -16,7 +16,7 @@ public class Post
 
     public string? MediaUrl { get; set; }
 
-    public string? MediaId => MediaUrl?.Split('/').Last();
+    public string? MediaId => MediaUrl?.Split('/')[^1];
 
     public string? MediaType { get; set; }
 

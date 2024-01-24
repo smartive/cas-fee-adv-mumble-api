@@ -18,7 +18,7 @@ public class User
 
     public string? AvatarUrl { get; set; }
 
-    public string? AvatarId => AvatarUrl?.Split('/').Last();
+    public string? AvatarId => AvatarUrl?.Split('/')[^1];
 
     public string? AvatarMediaType { get; set; }
 
