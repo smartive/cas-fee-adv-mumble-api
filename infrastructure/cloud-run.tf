@@ -33,6 +33,7 @@ locals {
     "AUTHENTICATION__ISSUER" : "https://${local.zitadel_instance}",
     "SWAGGER__CLIENTID" : zitadel_application_oidc.swagger.client_id,
     "STORAGE__BUCKET" : google_storage_bucket.gcs_bucket.name,
+    "DOTNET_SYSTEM_NET_HTTP_SOCKETSHTTPHANDLER_HTTP3SUPPORT" : "false",
   }
   run_secrets = {
     "DATABASE__PASSWORD" : "db-pass",
