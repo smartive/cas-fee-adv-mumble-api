@@ -12,7 +12,7 @@ resource "google_secret_manager_secret" "secrets" {
   secret_id = "${local.name}-${each.key}"
 
   replication {
-    automatic = true
+    auto {}
   }
 }
 
