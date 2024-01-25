@@ -44,24 +44,29 @@ public class DataContext(DbContextOptions options) : DbContext(options)
 
         modelBuilder
             .Entity<User>()
+            .HasIndex(u => u.Username)
+            .IsUnique();
+
+        modelBuilder
+            .Entity<User>()
             .ToTable(t =>
                 t.HasCheckConstraint(
                     "chk_avatar_type",
-                    @"(avatar_url is null and avatar_media_type is null) or (avatar_url is not null and avatar_media_type is not null)"));
+                    "(avatar_url is null and avatar_media_type is null) or (avatar_url is not null and avatar_media_type is not null)"));
 
         modelBuilder
             .Entity<Post>()
             .ToTable(t =>
                 t.HasCheckConstraint(
                     "chk_media_data",
-                    @"(media_url is null and media_type is null) or (media_url is not null and media_type is not null)"));
+                    "(media_url is null and media_type is null) or (media_url is not null and media_type is not null)"));
 
         modelBuilder
             .Entity<Post>()
             .ToTable(t =>
                 t.HasCheckConstraint(
                     "chk_post_content",
-                    @"(media_url is not null and media_type is not null) or text is not null"));
+                    "(media_url is not null and media_type is not null) or text is not null"));
 
         modelBuilder
             .Entity<Post>()
