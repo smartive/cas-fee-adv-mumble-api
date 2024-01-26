@@ -13,6 +13,6 @@ public class MediaUploadData
     /// Media file for the upload.
     /// </summary>
     [FromForm(Name = "media")]
-    [SwaggerSchema(WriteOnly = true, Required = new[] { "media" })]
+    [SwaggerSchema(WriteOnly = true, Required = ["media"])]
     public IFormFile? Media { get; set; }
 }

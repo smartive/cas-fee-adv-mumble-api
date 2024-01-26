@@ -77,7 +77,7 @@ public class UserController(IUsers users) : ControllerBase
     }
 
     /// <summary>
-    /// Update the user profile.
+    /// Update the authenticated user profile.
     /// </summary>
     [HttpPatch]
     [ZitadelAuthorize]
@@ -85,22 +85,25 @@ public class UserController(IUsers users) : ControllerBase
         "Update the current authenticated user profile. " +
         "Returns a bad request if fields are set to an empty string. " +
         "Omitting a field does not update them. " +
-        "Uploading an avatar is done via the /users/avatar endpoint.")]
-    [SwaggerResponse(204, "Success - No Content")]
-    [SwaggerResponse(400, "Bad Request")]
+        "Uploading an avatar is done via the /users/avatar endpoint. " +
+        "The username is unique, duplicating it results in an error.")]
+    [SwaggerResponse(204, "Success - The user profile was updated")]
+    [SwaggerResponse(400, "Bad Request - Some fields were set to empty string")]
+    [SwaggerResponse(404, "Not Found - The user was not found in the database")]
+    [SwaggerResponse(409, "Conflict - The username is already taken")]
     public async Task<IActionResult> UpdateProfile([FromBody] UpdateUserData data)
     {
-        if (data.Firstname == string.Empty)
+        if (data.Firstname?.Length == 0)
         {
             return BadRequest("Firstname is an empty string.");
         }
 
-        if (data.Lastname == string.Empty)
+        if (data.Lastname?.Length == 0)
         {
             return BadRequest("Lastname is an empty string.");
         }
 
-        if (data.Username == string.Empty)
+        if (data.Username?.Length == 0)
         {
             return BadRequest("Username is an empty string.");
         }
@@ -113,6 +116,10 @@ public class UserController(IUsers users) : ControllerBase
         catch (UserNotFoundException)
         {
             return NotFound();
+        }
+        catch (UsernameAlreadyTakenException)
+        {
+            return Conflict();
         }
     }
 
@@ -129,18 +136,27 @@ public class UserController(IUsers users) : ControllerBase
         "Returns the new media url to the uploaded user avatar. " +
         "Upload limit: 0.5 MB.")]
     [SwaggerResponse(200, "Success - New Avatar URL")]
-    [SwaggerResponse(400, "Bad Request")]
-    public async Task<IActionResult> UploadAvatar([FromForm][SwaggerRequestBody(Required = true)] MediaUploadData data)
+    [SwaggerResponse(400, "Bad Request - The uploaded file was too large")]
+    [SwaggerResponse(404, "Not Found - User with the given ID was not found")]
+    [SwaggerResponse(415, "Unsupported Media Type - The uploaded file is not an image")]
+    public async Task<IActionResult> UploadAvatar([FromForm] [SwaggerRequestBody(Required = true)] MediaUploadData data)
     {
         if (data.Media?.ContentType.StartsWith("image/") != true)
         {
-            return BadRequest("Media must be an image.");
+            return new UnsupportedMediaTypeResult();
         }
 
-        await using var file = data.Media.OpenReadStream();
-        var newUrl = await users.UpdateUserAvatar(HttpContext.UserId(), (file, data.Media.ContentType));
+        try
+        {
+            await using var file = data.Media.OpenReadStream();
+            var newUrl = await users.UpdateUserAvatar(HttpContext.UserId(), (file, data.Media.ContentType));
 
-        return Ok(newUrl);
+            return Ok(newUrl);
+        }
+        catch (UserNotFoundException)
+        {
+            return NotFound();
+        }
     }
 
     /// <summary>
@@ -150,7 +166,7 @@ public class UserController(IUsers users) : ControllerBase
     [ZitadelAuthorize]
     [SwaggerOperation(Description =
         "Remove the current avatar picture (if any) for the actual authenticated user.")]
-    [SwaggerResponse(204, "Success - No Content")]
+    [SwaggerResponse(204, "Success - Avatar deleted")]
     public async Task<IActionResult> DeleteAvatar()
     {
         await users.UpdateUserAvatar(HttpContext.UserId());

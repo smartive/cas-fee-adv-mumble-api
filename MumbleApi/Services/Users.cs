@@ -48,13 +48,25 @@ internal class Users(IDbContextFactory<DataContext> factory, IStorage storage) :
         user.Lastname = lastname ?? user.Lastname;
         user.Username = username ?? user.Username;
 
-        await db.SaveChangesAsync();
+        try
+        {
+            await db.SaveChangesAsync();
+        }
+        catch (DbUpdateException e) when (e.IsUniqueViolation())
+        {
+            throw new UsernameAlreadyTakenException();
+        }
     }
 
     public async Task<string?> UpdateUserAvatar(string id, (Stream File, string MediaType)? avatar = null)
     {
         await using var db = await factory.CreateDbContextAsync();
-        var user = await db.Users.SingleAsync(u => u.Id == id);
+        var user = await db.Users.SingleOrDefaultAsync(u => u.Id == id);
+
+        if (user is null)
+        {
+            throw new UserNotFoundException();
+        }
 
         if (user.AvatarId is not null)
         {
