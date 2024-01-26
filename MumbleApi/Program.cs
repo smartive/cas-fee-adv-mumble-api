@@ -147,9 +147,8 @@ builder.Services.AddSwaggerGen(o =>
     {
         Format = "ULID",
         Title = "ULID",
-        Description = "Universally Unique Lexicographically Sortable Identifier",
+        Description = "Universally Unique Lexicographically Sortable Identifier (e.g. 01GEESHPQQ4NJKNZJN9AKWQW6G)",
         Type = "string",
-        Example = new OpenApiString("01GEESHPQQ4NJKNZJN9AKWQW6G"),
         ExternalDocs = new() { Description = "ULID Specification", Url = new("https://github.com/ulid/spec"), },
     });
 
