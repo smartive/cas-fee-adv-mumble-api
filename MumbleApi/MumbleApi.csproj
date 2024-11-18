@@ -19,7 +19,7 @@
       <PackageReference Include="Microsoft.EntityFrameworkCore.Abstractions" Version="8.0.11" />
       <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.11" PrivateAssets="All" />
       <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.11" />
-      <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.10" />
+      <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.11" />
       <PackageReference Include="Swashbuckle.AspNetCore" Version="7.0.0" />
       <PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="7.0.0" />
       <PackageReference Include="Ulid" Version="1.3.4" />
