@@ -138,19 +138,18 @@ public class UserController(IUsers users) : ControllerBase
         "Returns the new media url to the uploaded user avatar. " +
         "Upload limit: 0.5 MB.")]
     [SwaggerResponse(200, "Success - New Avatar URL")]
-    [SwaggerResponse(400, "Bad Request - The uploaded file was too large or missing")]
+    [SwaggerResponse(400, "Bad Request - The uploaded file was too large, missing, or not an image")]
     [SwaggerResponse(404, "Not Found - User with the given ID was not found")]
-    [SwaggerResponse(415, "Unsupported Media Type - The uploaded file is not an image")]
     public async Task<IActionResult> UploadAvatar([FromForm][SwaggerRequestBody(Required = true)] MediaUploadData data)
     {
-        if (data.Media is null)
+        if (data?.Media is null)
         {
             return BadRequest("Media file is required.");
         }
 
-        if (!data.Media.ContentType.StartsWith("image/"))
+        if (data.Media.ContentType?.StartsWith("image/") != true)
         {
-            return new UnsupportedMediaTypeResult();
+            return BadRequest("Media must be an image.");
         }
 
         try
