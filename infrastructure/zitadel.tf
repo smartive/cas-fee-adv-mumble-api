@@ -25,7 +25,7 @@ resource "zitadel_application_oidc" "swagger" {
 
   name = "Swagger UI"
   redirect_uris = [
-    "https://mumble-api-prod-4cxdci3drq-oa.a.run.app/oauth2-redirect.html",
+    "https://mumble-api-prod-714602723919.europe-west6.run.app/oauth2-redirect.html",
   ]
   app_type          = "OIDC_APP_TYPE_WEB"
   response_types    = ["OIDC_RESPONSE_TYPE_CODE"]
