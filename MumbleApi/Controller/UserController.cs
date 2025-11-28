@@ -30,11 +30,13 @@ public class UserController(IUsers users) : ControllerBase
         var (dbUsers, total) = await users.GetPaginatedUsers(pagination);
         var loggedIn = HttpContext.User.Identity?.IsAuthenticated == true;
 
-        var next = total > pagination.Offset + pagination.Limit
-            ? $"{Url.ActionLink()}{(pagination with { Offset = pagination.Offset + pagination.Limit }).ToQueryString()}"
+        var offset = pagination.Offset ?? 0;
+        var limit = pagination.Limit ?? 100;
+        var next = total > offset + limit
+            ? $"{Url.ActionLink()}{(pagination with { Offset = offset + limit }).ToQueryString()}"
             : null;
-        var prev = pagination.Offset > 0
-            ? $"{Url.ActionLink()}{(pagination with { Offset = Math.Max(pagination.Offset - pagination.Limit, 0) }).ToQueryString()}"
+        var prev = offset > 0
+            ? $"{Url.ActionLink()}{(pagination with { Offset = Math.Max(offset - limit, 0) }).ToQueryString()}"
             : null;
 
         return loggedIn
@@ -136,14 +138,18 @@ public class UserController(IUsers users) : ControllerBase
         "Returns the new media url to the uploaded user avatar. " +
         "Upload limit: 0.5 MB.")]
     [SwaggerResponse(200, "Success - New Avatar URL")]
-    [SwaggerResponse(400, "Bad Request - The uploaded file was too large")]
+    [SwaggerResponse(400, "Bad Request - The uploaded file was too large, missing, or not an image")]
     [SwaggerResponse(404, "Not Found - User with the given ID was not found")]
-    [SwaggerResponse(415, "Unsupported Media Type - The uploaded file is not an image")]
-    public async Task<IActionResult> UploadAvatar([FromForm] [SwaggerRequestBody(Required = true)] MediaUploadData data)
+    public async Task<IActionResult> UploadAvatar([FromForm][SwaggerRequestBody(Required = true)] MediaUploadData data)
     {
-        if (data.Media?.ContentType.StartsWith("image/") != true)
+        if (data?.Media is null)
         {
-            return new UnsupportedMediaTypeResult();
+            return BadRequest("Media file is required.");
+        }
+
+        if (data.Media.ContentType?.StartsWith("image/") != true)
+        {
+            return BadRequest("Media must be an image.");
         }
 
         try
@@ -187,11 +193,13 @@ public class UserController(IUsers users) : ControllerBase
         var (followers, total) = await users.GetPaginatedFollowers(id, pagination);
         var loggedIn = User.Identity?.IsAuthenticated == true;
 
-        var next = total > pagination.Offset + pagination.Limit
-            ? $"{Url.ActionLink()}{(pagination with { Offset = pagination.Offset + pagination.Limit }).ToQueryString()}"
+        var offset = pagination.Offset ?? 0;
+        var limit = pagination.Limit ?? 100;
+        var next = total > offset + limit
+            ? $"{Url.ActionLink()}{(pagination with { Offset = offset + limit }).ToQueryString()}"
             : null;
-        var prev = pagination.Offset > 0
-            ? $"{Url.ActionLink()}{(pagination with { Offset = Math.Max(pagination.Offset - pagination.Limit, 0) }).ToQueryString()}"
+        var prev = offset > 0
+            ? $"{Url.ActionLink()}{(pagination with { Offset = Math.Max(offset - limit, 0) }).ToQueryString()}"
             : null;
 
         return loggedIn
@@ -225,11 +233,13 @@ public class UserController(IUsers users) : ControllerBase
         var (followees, total) = await users.GetPaginatedFollowees(id, pagination);
         var loggedIn = User.Identity?.IsAuthenticated == true;
 
-        var next = total > pagination.Offset + pagination.Limit
-            ? $"{Url.ActionLink()}{(pagination with { Offset = pagination.Offset + pagination.Limit }).ToQueryString()}"
+        var offset = pagination.Offset ?? 0;
+        var limit = pagination.Limit ?? 100;
+        var next = total > offset + limit
+            ? $"{Url.ActionLink()}{(pagination with { Offset = offset + limit }).ToQueryString()}"
             : null;
-        var prev = pagination.Offset > 0
-            ? $"{Url.ActionLink()}{(pagination with { Offset = Math.Max(pagination.Offset - pagination.Limit, 0) }).ToQueryString()}"
+        var prev = offset > 0
+            ? $"{Url.ActionLink()}{(pagination with { Offset = Math.Max(offset - limit, 0) }).ToQueryString()}"
             : null;
 
         return loggedIn

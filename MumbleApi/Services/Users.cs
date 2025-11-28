@@ -22,8 +22,8 @@ internal class Users(IDbContextFactory<DataContext> factory, IStorage storage) :
         var count = await query.CountAsync();
 
         return (await query
-                .Skip(pagination.Offset)
-                .Take(Math.Clamp(pagination.Limit, 0, 1000))
+                .Skip(pagination.Offset ?? 0)
+                .Take(Math.Clamp(pagination.Limit ?? 100, 0, 1000))
                 .ToListAsync(),
             count);
     }
@@ -98,8 +98,8 @@ internal class Users(IDbContextFactory<DataContext> factory, IStorage storage) :
         var count = await query.CountAsync();
 
         return (await query
-                .Skip(pagination.Offset)
-                .Take(Math.Clamp(pagination.Limit, 0, 1000))
+                .Skip(pagination.Offset ?? 0)
+                .Take(Math.Clamp(pagination.Limit ?? 100, 0, 1000))
                 .ToListAsync(),
             count);
     }
@@ -117,8 +117,8 @@ internal class Users(IDbContextFactory<DataContext> factory, IStorage storage) :
         var count = await query.CountAsync();
 
         return (await query
-                .Skip(pagination.Offset)
-                .Take(Math.Clamp(pagination.Limit, 0, 1000))
+                .Skip(pagination.Offset ?? 0)
+                .Take(Math.Clamp(pagination.Limit ?? 100, 0, 1000))
                 .ToListAsync(),
             count);
     }

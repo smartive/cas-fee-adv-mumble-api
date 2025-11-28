@@ -1,6 +1,6 @@
 locals {
-  zitadel_org_id     = "229387640351229257"
-  zitadel_project_id = "229389352298352392"
+  zitadel_org_id     = "338558858827942346"
+  zitadel_project_id = "348701753820117818"
 }
 
 resource "zitadel_application_api" "api" {

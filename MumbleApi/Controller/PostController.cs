@@ -34,11 +34,11 @@ public class PostController(IPosts posts, IPostUpdates updates) : ControllerBase
         {
             Count = Convert.ToUInt32(total),
             Data = dbPosts.Select(Post.FromEntity(HttpContext.OptionalUserId())).ToList(),
-            Next = total > search.Offset + search.Limit
-                ? $"{Url.ActionLink()}{(search with { Offset = search.Offset + search.Limit }).ToQueryString()}"
+            Next = total > (search.Offset ?? 0) + (search.Limit ?? 100)
+                ? $"{Url.ActionLink()}{(search with { Offset = (search.Offset ?? 0) + (search.Limit ?? 100) }).ToQueryString()}"
                 : null,
-            Previous = search.Offset > 0
-                ? $"{Url.ActionLink()}{(search with { Offset = Math.Max(search.Offset - search.Limit, 0) }).ToQueryString()}"
+            Previous = (search.Offset ?? 0) > 0
+                ? $"{Url.ActionLink()}{(search with { Offset = Math.Max((search.Offset ?? 0) - (search.Limit ?? 100), 0) }).ToQueryString()}"
                 : null,
         });
     }
@@ -346,11 +346,11 @@ public class PostController(IPosts posts, IPostUpdates updates) : ControllerBase
             {
                 Count = Convert.ToUInt32(total),
                 Data = replies.Select(Reply.FromEntity(HttpContext.OptionalUserId())).ToList(),
-                Next = total > pagination.Offset + pagination.Limit
-                    ? $"{Url.ActionLink()}{(pagination with { Offset = pagination.Offset + pagination.Limit }).ToQueryString()}"
+                Next = total > (pagination.Offset ?? 0) + (pagination.Limit ?? 100)
+                    ? $"{Url.ActionLink()}{(pagination with { Offset = (pagination.Offset ?? 0) + (pagination.Limit ?? 100) }).ToQueryString()}"
                     : null,
-                Previous = pagination.Offset > 0
-                    ? $"{Url.ActionLink()}{(pagination with { Offset = Math.Max(pagination.Offset - pagination.Limit, 0) }).ToQueryString()}"
+                Previous = (pagination.Offset ?? 0) > 0
+                    ? $"{Url.ActionLink()}{(pagination with { Offset = Math.Max((pagination.Offset ?? 0) - (pagination.Limit ?? 100), 0) }).ToQueryString()}"
                     : null,
             });
         }
