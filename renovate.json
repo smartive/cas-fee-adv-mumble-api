@@ -1,6 +1,0 @@
-﻿{
-  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": [
-    "local>smartive/renovate-config"
-  ]
-}
