@@ -141,7 +141,7 @@ public class UserController(IUsers users) : ControllerBase
     [SwaggerResponse(400, "Bad Request - The uploaded file was too large")]
     [SwaggerResponse(404, "Not Found - User with the given ID was not found")]
     [SwaggerResponse(415, "Unsupported Media Type - The uploaded file is not an image")]
-    public async Task<IActionResult> UploadAvatar([FromForm] [SwaggerRequestBody(Required = true)] MediaUploadData data)
+    public async Task<IActionResult> UploadAvatar([FromForm][SwaggerRequestBody(Required = true)] MediaUploadData data)
     {
         if (data.Media?.ContentType.StartsWith("image/") != true)
         {
