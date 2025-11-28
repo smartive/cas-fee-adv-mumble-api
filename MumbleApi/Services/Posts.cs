@@ -63,8 +63,8 @@ internal class Posts(IDbContextFactory<DataContext> factory, IStorage storage) :
 
         return (
             await query
-                .Skip(parameters.Offset)
-                .Take(Math.Clamp(parameters.Limit, 0, 1000))
+                .Skip(parameters.Offset ?? 0)
+                .Take(Math.Clamp(parameters.Limit ?? 100, 0, 1000))
                 .ToListAsync(),
             count);
     }
@@ -346,8 +346,8 @@ internal class Posts(IDbContextFactory<DataContext> factory, IStorage storage) :
 
         return (
             await query
-                .Skip(pagination.Offset)
-                .Take(Math.Clamp(pagination.Limit, 0, 1000))
+                .Skip(pagination.Offset ?? 0)
+                .Take(Math.Clamp(pagination.Limit ?? 100, 0, 1000))
                 .ToListAsync(),
             count);
     }

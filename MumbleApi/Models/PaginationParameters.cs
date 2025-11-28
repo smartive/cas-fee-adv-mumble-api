@@ -9,7 +9,7 @@ public record PaginationParameters
     /// </summary>
     /// <example>0</example>
     [FromQuery(Name = "offset")]
-    public int Offset { get; set; }
+    public int? Offset { get; set; }
 
     /// <summary>
     /// The limit of items to return. Minimum is 1, maximum is 1000.
@@ -17,11 +17,11 @@ public record PaginationParameters
     /// </summary>
     /// <example>100</example>
     [FromQuery(Name = "limit")]
-    public int Limit { get; set; } = 100;
+    public int? Limit { get; set; } = 100;
 
     public virtual QueryString ToQueryString() => QueryString.Create(new[]
     {
-        new KeyValuePair<string, string?>("offset", Offset.ToString()),
-        new KeyValuePair<string, string?>("limit", Limit.ToString()),
+        new KeyValuePair<string, string?>("offset", (Offset ?? 0).ToString()),
+        new KeyValuePair<string, string?>("limit", (Limit ?? 100).ToString()),
     });
 }

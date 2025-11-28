@@ -30,11 +30,13 @@ public class UserController(IUsers users) : ControllerBase
         var (dbUsers, total) = await users.GetPaginatedUsers(pagination);
         var loggedIn = HttpContext.User.Identity?.IsAuthenticated == true;
 
-        var next = total > pagination.Offset + pagination.Limit
-            ? $"{Url.ActionLink()}{(pagination with { Offset = pagination.Offset + pagination.Limit }).ToQueryString()}"
+        var offset = pagination.Offset ?? 0;
+        var limit = pagination.Limit ?? 100;
+        var next = total > offset + limit
+            ? $"{Url.ActionLink()}{(pagination with { Offset = offset + limit }).ToQueryString()}"
             : null;
-        var prev = pagination.Offset > 0
-            ? $"{Url.ActionLink()}{(pagination with { Offset = Math.Max(pagination.Offset - pagination.Limit, 0) }).ToQueryString()}"
+        var prev = offset > 0
+            ? $"{Url.ActionLink()}{(pagination with { Offset = Math.Max(offset - limit, 0) }).ToQueryString()}"
             : null;
 
         return loggedIn
@@ -187,11 +189,13 @@ public class UserController(IUsers users) : ControllerBase
         var (followers, total) = await users.GetPaginatedFollowers(id, pagination);
         var loggedIn = User.Identity?.IsAuthenticated == true;
 
-        var next = total > pagination.Offset + pagination.Limit
-            ? $"{Url.ActionLink()}{(pagination with { Offset = pagination.Offset + pagination.Limit }).ToQueryString()}"
+        var offset = pagination.Offset ?? 0;
+        var limit = pagination.Limit ?? 100;
+        var next = total > offset + limit
+            ? $"{Url.ActionLink()}{(pagination with { Offset = offset + limit }).ToQueryString()}"
             : null;
-        var prev = pagination.Offset > 0
-            ? $"{Url.ActionLink()}{(pagination with { Offset = Math.Max(pagination.Offset - pagination.Limit, 0) }).ToQueryString()}"
+        var prev = offset > 0
+            ? $"{Url.ActionLink()}{(pagination with { Offset = Math.Max(offset - limit, 0) }).ToQueryString()}"
             : null;
 
         return loggedIn
@@ -225,11 +229,13 @@ public class UserController(IUsers users) : ControllerBase
         var (followees, total) = await users.GetPaginatedFollowees(id, pagination);
         var loggedIn = User.Identity?.IsAuthenticated == true;
 
-        var next = total > pagination.Offset + pagination.Limit
-            ? $"{Url.ActionLink()}{(pagination with { Offset = pagination.Offset + pagination.Limit }).ToQueryString()}"
+        var offset = pagination.Offset ?? 0;
+        var limit = pagination.Limit ?? 100;
+        var next = total > offset + limit
+            ? $"{Url.ActionLink()}{(pagination with { Offset = offset + limit }).ToQueryString()}"
             : null;
-        var prev = pagination.Offset > 0
-            ? $"{Url.ActionLink()}{(pagination with { Offset = Math.Max(pagination.Offset - pagination.Limit, 0) }).ToQueryString()}"
+        var prev = offset > 0
+            ? $"{Url.ActionLink()}{(pagination with { Offset = Math.Max(offset - limit, 0) }).ToQueryString()}"
             : null;
 
         return loggedIn
