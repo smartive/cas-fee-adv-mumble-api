@@ -10,7 +10,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Community.Microsoft.Extensions.Caching.PostgreSql" Version="6.0.0" />
+      <PackageReference Include="Community.Microsoft.Extensions.Caching.PostgreSql" Version="6.0.1" />
       <PackageReference Include="EFCore.NamingConventions" Version="9.0.0" />
       <PackageReference Include="Google.Cloud.Storage.V1" Version="4.13.0" />
       <PackageReference Include="Lib.AspNetCore.ServerSentEvents" Version="9.0.0" />
