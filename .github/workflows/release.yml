@@ -42,28 +42,27 @@ jobs:
             @codedependant/semantic-release-docker
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  # TODO: Enable deployment once the course starts again
-  # deploy:
-  #   name: Deploy API on Google Cloud Platform
-  #   runs-on: ubuntu-latest
-  #   needs:
-  #     - release
-  #   if: needs.release.outputs.new_release_published == 'true'
-  #   steps:
-  #     - uses: actions/checkout@v4
+  deploy:
+    name: Deploy API on Google Cloud Platform
+    runs-on: ubuntu-latest
+    needs:
+      - release
+    if: needs.release.outputs.new_release_published == 'true'
+    steps:
+      - uses: actions/checkout@v4
 
-  #     - name: Google Cloud Credentials
-  #       uses: google-github-actions/auth@v2
-  #       with:
-  #         credentials_json: "${{ secrets.GOOGLE_DEPLOYER }}"
+      - name: Google Cloud Credentials
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: "${{ secrets.GOOGLE_DEPLOYER }}"
 
-  #     - uses: hashicorp/setup-terraform@v3
+      - uses: hashicorp/setup-terraform@v3
 
-  #     - run: terraform init
-  #       working-directory: infrastructure
+      - run: terraform init
+        working-directory: infrastructure
 
-  #     - run: terraform apply -auto-approve
-  #       working-directory: infrastructure
-  #       env:
-  #         TF_VAR_release_version: ${{ needs.release.outputs.new_release_version }}
-  #         TF_VAR_zitadel_auth: ${{ secrets.ZITADEL_DEPLOYER }}
+      - run: terraform apply -auto-approve
+        working-directory: infrastructure
+        env:
+          TF_VAR_release_version: ${{ needs.release.outputs.new_release_version }}
+          TF_VAR_zitadel_auth: ${{ secrets.ZITADEL_DEPLOYER }}
