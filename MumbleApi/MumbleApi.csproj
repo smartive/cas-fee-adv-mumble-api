@@ -10,7 +10,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Community.Microsoft.Extensions.Caching.PostgreSql" Version="6.0.1" />
+      <PackageReference Include="Community.Microsoft.Extensions.Caching.PostgreSql" Version="4.0.6" />
       <PackageReference Include="EFCore.NamingConventions" Version="8.0.3" />
       <PackageReference Include="Google.Cloud.Storage.V1" Version="4.13.0" />
       <PackageReference Include="Lib.AspNetCore.ServerSentEvents" Version="8.3.1" />
@@ -20,6 +20,7 @@
       <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.22" PrivateAssets="All" />
       <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.22" />
       <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.11" />
+      <PackageReference Include="Npgsql" Version="8.0.6" />
       <PackageReference Include="Swashbuckle.AspNetCore" Version="8.1.4" />
       <PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="8.1.4" />
       <PackageReference Include="Ulid" Version="1.4.1" />
