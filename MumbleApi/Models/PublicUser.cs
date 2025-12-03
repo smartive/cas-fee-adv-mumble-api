@@ -23,6 +23,13 @@ public class PublicUser
     public string Username { get; set; } = string.Empty;
 
     /// <summary>
+    /// The display name of the creator.
+    /// </summary>
+    /// <example>max muster</example>
+    [SwaggerSchema]
+    public string DisplayName { get; set; } = string.Empty;
+
+    /// <summary>
     /// If set, points to the avatar of the user.
     /// </summary>
     [SwaggerSchema(ReadOnly = true)]
@@ -33,5 +40,6 @@ public class PublicUser
         Id = user.Id,
         Username = user.Username,
         AvatarUrl = user.AvatarUrl,
+        DisplayName = $"{user.Firstname} {user.Lastname}".Trim(),
     };
 }
