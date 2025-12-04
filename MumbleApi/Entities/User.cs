@@ -16,6 +16,8 @@ public class User
     [Required(AllowEmptyStrings = false)]
     public string Lastname { get; set; } = string.Empty;
 
+    public string DisplayName => $"{Firstname} {Lastname}".Trim();
+
     public string? AvatarUrl { get; set; }
 
     public string? AvatarId => AvatarUrl?.Split('/')[^1];

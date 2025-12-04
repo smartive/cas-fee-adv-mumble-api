@@ -22,6 +22,7 @@ public record Reply : PostBase
                 Id = post.Creator.Id,
                 Username = post.Creator.Username,
                 AvatarUrl = post.Creator.AvatarUrl,
+                DisplayName = post.Creator.DisplayName,
             }
             : new(),
         Likes = Convert.ToUInt32(post.Likes?.Count ?? 0),

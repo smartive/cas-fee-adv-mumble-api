@@ -26,7 +26,7 @@ public record Post : PostBase
                 Id = post.Creator.Id,
                 Username = post.Creator.Username,
                 AvatarUrl = post.Creator.AvatarUrl,
-                DisplayName = $"{post.Creator.Firstname} {post.Creator.Lastname}".Trim(),
+                DisplayName = post.Creator.DisplayName,
             }
             : new(),
         Likes = Convert.ToUInt32(post.Likes?.Count ?? 0),
