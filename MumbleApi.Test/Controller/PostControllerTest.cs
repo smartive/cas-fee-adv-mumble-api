@@ -887,4 +887,60 @@ public class PostControllerTest(WebAppFactory factory) : IClassFixture<WebAppFac
         result = await client.GetFromJsonAsync<Post>("/posts/00000000000000000000000001");
         result?.LikedBySelf.Should().BeFalse();
     }
+
+    [Fact]
+    public async Task FetchPostsContainsDisplayName()
+    {
+        await factory.PrepareTestData(TestData.PostsWithoutLikes);
+        var client = factory.CreateClient();
+        var result = await client.GetFromJsonAsync<PaginatedResult<Post>>("/posts");
+
+        if (result is null)
+        {
+            Assert.Fail("Result is null.");
+        }
+
+        result.Data.Should().NotBeEmpty();
+        result.Data.Should().AllSatisfy(p =>
+        {
+            p.Creator.DisplayName.Should().NotBeNullOrEmpty();
+        });
+
+        // Verify specific display names based on test data
+        var postByMaxMuster = result.Data.FirstOrDefault(p => p.Creator.Id == TestData.UserMaxMuster.Id);
+        postByMaxMuster.Should().NotBeNull();
+        postByMaxMuster!.Creator.DisplayName.Should().Be("Max Muster");
+
+        var postByTestyTester = result.Data.FirstOrDefault(p => p.Creator.Id == TestData.UserTestyTester.Id);
+        postByTestyTester.Should().NotBeNull();
+        postByTestyTester!.Creator.DisplayName.Should().Be("Testy Tester");
+    }
+
+    [Fact]
+    public async Task FetchRepliesContainsDisplayName()
+    {
+        await factory.PrepareTestData(TestData.PostsWithoutLikes);
+        var client = factory.CreateClient();
+        var result = await client.GetFromJsonAsync<PaginatedResult<Reply>>("/posts/00000000000000000000000002/replies");
+
+        if (result is null)
+        {
+            Assert.Fail("Result is null.");
+        }
+
+        result.Data.Should().NotBeEmpty();
+        result.Data.Should().AllSatisfy(r =>
+        {
+            r.Creator.DisplayName.Should().NotBeNullOrEmpty();
+        });
+
+        // Verify specific display names based on test data
+        var replyByJackJohnson = result.Data.FirstOrDefault(r => r.Creator.Id == TestData.UserJackJohnson.Id);
+        replyByJackJohnson.Should().NotBeNull();
+        replyByJackJohnson!.Creator.DisplayName.Should().Be("Jack Johnson");
+
+        var replyByTestyTester = result.Data.FirstOrDefault(r => r.Creator.Id == TestData.UserTestyTester.Id);
+        replyByTestyTester.Should().NotBeNull();
+        replyByTestyTester!.Creator.DisplayName.Should().Be("Testy Tester");
+    }
 }
