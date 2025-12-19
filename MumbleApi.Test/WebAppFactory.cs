@@ -51,6 +51,7 @@ public class WebAppFactory : WebApplicationFactory<Program>
             ("DATABASE__USERNAME", "user"),
             ("DATABASE__PASSWORD", "pass"),
             ("AUTHENTICATION__JWTKEY", "{}"),
+            ("DISABLE_SIMULATED_LATENCY", "true"),
         };
         foreach (var (name, value) in testEnvs)
         {
