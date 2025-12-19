@@ -12,6 +12,13 @@ public class SimulateLatencyAttribute : Attribute, IAsyncResultFilter
 {
     public async Task OnResultExecutionAsync(ResultExecutingContext context, ResultExecutionDelegate next)
     {
+        // Allow tests or specific environments to disable simulated latency.
+        if (Environment.GetEnvironmentVariable("DISABLE_SIMULATED_LATENCY")?.Equals("true", StringComparison.OrdinalIgnoreCase) == true)
+        {
+            await next();
+            return;
+        }
+
         // Generate random delay between 50ms and 3000ms
         var delay = Random.Shared.Next(50, 3001);
         await Task.Delay(delay);
