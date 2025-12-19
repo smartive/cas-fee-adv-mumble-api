@@ -15,6 +15,7 @@ namespace MumbleApi.Controller;
 [OptionalZitadelAuthorize]
 [Produces("application/json")]
 [SwaggerTag("Users in the Mumble System.")]
+[SimulateLatency]
 public class UserController(IUsers users) : ControllerBase
 {
     /// <summary>
