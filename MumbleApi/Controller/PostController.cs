@@ -17,6 +17,7 @@ namespace MumbleApi.Controller;
 [Produces("application/json")]
 [SwaggerTag("Manage posts in the Mumble system.")]
 [OptionalZitadelAuthorize]
+[SimulateLatency]
 public class PostController(IPosts posts, IPostUpdates updates) : ControllerBase
 {
     /// <summary>
