@@ -20,9 +20,11 @@ public class SimulateLatencyAttribute : Attribute, IAsyncResultFilter
         await next();
     }
 
+#pragma warning disable S2325 // Method can be made static - required by IAsyncResultFilter interface
     public Task OnResultExecutedAsync(ResultExecutedContext context)
     {
         // No action needed after result is executed
         return Task.CompletedTask;
     }
+#pragma warning restore S2325
 }
