@@ -30,7 +30,7 @@ public record Post : PostBase
             }
             : new(),
         Likes = Convert.ToUInt32(post.Likes?.Count ?? 0),
-        Replies = Convert.ToUInt32(post.Replies?.Count ?? 0),
+        Replies = Convert.ToUInt32(post.Replies?.Count(r => r.Deleted == null) ?? 0),
         MediaType = post.MediaType,
         MediaUrl = post.MediaUrl,
         Text = post.Text,
